@@ -1,0 +1,17 @@
+{
+    "rules": [
+      {
+        "rulePriority": 1,
+        "description": "Delete old unused images and maintain only 5 images",
+        "selection": {
+          "tagStatus": "any",
+          "countType": "imageCountMoreThan",
+          "countNumber": 5 
+        },
+        "action": {
+          "type": "expire"
+        }
+      }
+    ]
+}
+  

@@ -1,0 +1,30 @@
+ingress:
+  authEnabled: false
+  demoEnabled: false
+
+migrations:
+  enabled: true
+
+celeryModes:
+  standard: true
+
+celeryBeat:
+  enabled: true
+
+postgres:
+  enabled: true
+
+pgadmin:
+  enabled: true
+
+redis:
+  enabled: true
+
+s3:
+  enabled: true
+
+thumbor:
+  enabled: false
+
+secrets:
+  enabled: true

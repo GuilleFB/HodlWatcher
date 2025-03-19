@@ -1,0 +1,56 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[requires]
+python_version = "3.11"
+
+[packages]
+django = "==4.2.16"
+django-compressor = "==4.3.1"
+django-constance = {version = "==2.9.1", extras = ["database"]}
+django-extensions = "==3.2.1"
+django-health-check = "==3.17.0"
+django-kaio = "==1.5.0"
+django-logentry-admin = "==1.1.0"
+django-redis = "==5.2.0"
+django-robots = "==5.0"
+django-yubin = "==2.0.5"
+redis = "==4.5.5"
+uwsgi = "==2.0.22"
+django-migration-checker = "==0.8.0"
+django-prometheus = "==2.3.1"
+django-configurations = "==2.4.1"
+psycopg = {version = "==3.1.9", extras = ["binary"]}
+sentry-sdk = "==1.22.2"
+celery = "==5.2.7"
+django-celery-beat = "==2.5.0"
+django-celery-results = "==2.5.0"
+flower = "==1.2.0"
+boto3 = "==1.26.129"
+django-storages = "==1.13.2"
+
+[dev-packages]
+bandit = {version = "==1.7.5", extras = ["toml"]}
+black = "==23.3.0"
+flake8 = "==4.0.1"
+flake8-django = "==1.2.0"
+flake8-eradicate = "==1.4.0"
+pytest = "==7.3.1"
+pytest-black = "==0.3.12"
+pytest-flake8 = "==1.1.1"
+pytest-checkipdb = "==1.0.9"
+pytest-django = "==4.5.2"
+pytest-xdist = "==3.2.1"
+django-debug-toolbar = "==4.0.0"
+ipython = "==8.13.2"
+ipdb = "==0.13.13"
+whitenoise = "==6.4.0"
+model-bakery = "==1.11.0"
+debugpy = "==1.6.7"
+mypy = "==1.4.1"
+pytest-mypy = "==0.10.3"
+django-stubs = "==4.2.2"
+celery-types = "==0.15.0"
+isort = "*"

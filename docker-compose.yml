@@ -1,0 +1,156 @@
+services:
+
+  .backend: &backend
+    image: HodlWatcher_HodlWatcher_uwsgi:build
+    build: .
+    env_file: env-uwsgi
+    ports:
+      - "8080:8080"
+
+  uwsgi:
+    <<: *backend
+    depends_on:
+      - redis
+      - postgres
+    links:
+      - redis
+      - postgres
+    environment:
+      ENABLE_BASIC_AUTH: "True"
+
+  nginx:
+    image: HodlWatcher_HodlWatcher_nginx:build
+    build:
+      context: docker/nginx/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - uwsgi
+    links:
+      - uwsgi
+    environment:
+      UWSGI_ADDR: "uwsgi:8080"
+
+  .kvstore: &kvstore
+    image: redis:7.0-alpine
+
+  redis:
+    <<: *kvstore
+    ports:
+      - "6379:6379"
+
+  .database: &database
+    image: postgres:15.2-alpine
+    env_file: env-devel
+
+  postgres:
+    <<: *database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/postgres
+      - postgres-data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:RELEASE.2023-05-04T21-44-30Z
+    command: 'minio server --console-address ":9001"'
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - minio-data:/minio-data
+    env_file: env-devel
+
+  create_bucket:
+    image: minio/mc:RELEASE.2023-05-04T18-10-16Z
+    depends_on:
+      - minio
+    env_file: env-devel
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://$${MINIO_SERVER_HOST}:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      mc mb --ignore-existing myminio/$${AWS_STORAGE_BUCKET_NAME};
+      exit 0;
+      "
+
+  devel: &devel
+    build:
+      context: .
+      args:
+          APP_ENV: devel
+    volumes:
+      - ./src/:/app
+    environment:
+      ENABLE_BASIC_AUTH: "False"
+    env_file: env-devel
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    tty: true
+    command: run-devel
+    ports:
+      - "8000:8000"
+
+  debug:
+    <<: *devel
+    command: run-debug
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+
+  celery:
+    <<: *devel
+    command: run-celery
+    ports: []
+
+  celery-beat:
+    <<: *devel
+    command: run-celery-beat
+    ports: []
+    depends_on:
+      - postgres
+      - redis
+
+  flower:
+    <<: *devel
+    command: run-flower
+    depends_on:
+      - redis
+    ports:
+      - "5555:5555"
+
+  deps:
+    build:
+      context: .
+      dockerfile: Dockerfile.deps
+
+  trivy:
+    image: aquasec/trivy:0.41.0
+    volumes:
+      - ./:/project:ro
+    entrypoint: [""]
+    command: trivy --quiet fs --severity HIGH,CRITICAL --ignore-unfixed /project
+
+
+# Services for tests
+
+  uwsgi-test:
+    <<: *backend
+    depends_on:
+      - redis-test
+      - postgres-test
+    links:
+      - redis-test
+      - postgres-test
+
+  postgres-test:
+    <<: *database
+
+  redis-test:
+    <<: *kvstore
+
+volumes:
+  postgres:
+  postgres-data:
+  minio-data:

@@ -1,0 +1,140 @@
+image: registry.apsl.net/library/gitlab-builder-aws:latest
+
+stages:
+  - test
+  - build
+  - deploy
+
+
+.before_script_template: &before_script_labs
+  before_script:
+    - export APP_NAME=HodlWatcher
+    - export ENVIRONMENT=labs
+    - export VERSION=${CI_PIPELINE_ID}-${CI_COMMIT_SHA:0:8}
+    - export IMAGE=${GITOPS_LABS_REGISTRY}/${CI_PROJECT_ROOT_NAMESPACE}/${APP_NAME}:${VERSION}
+    - export AWS_ACCESS_KEY_ID=${GITOPS_LABS_AWS_ACCESS_KEY_ID}
+    - export AWS_SECRET_ACCESS_KEY=${GITOPS_LABS_AWS_SECRET_ACCESS_KEY}
+    - export AWS_DEFAULT_REGION=${GITOPS_LABS_AWS_DEFAULT_REGION}
+
+.before_script_template: &before_script_pre
+  before_script:
+    - export APP_NAME=HodlWatcher
+    - export ENVIRONMENT=pre
+    - export VERSION=${CI_PIPELINE_ID}-${CI_COMMIT_SHA:0:8}
+    - export IMAGE=${GITOPS_PRE_REGISTRY}/${CI_PROJECT_ROOT_NAMESPACE}/${APP_NAME}:${VERSION}
+    - export AWS_ACCESS_KEY_ID=${GITOPS_PRE_AWS_ACCESS_KEY_ID}
+    - export AWS_SECRET_ACCESS_KEY=${GITOPS_PRE_AWS_SECRET_ACCESS_KEY}
+    - export AWS_DEFAULT_REGION=${GITOPS_PRE_AWS_DEFAULT_REGION}
+
+.before_script_template: &before_script_prod
+  before_script:
+    - export APP_NAME=HodlWatcher
+    - export ENVIRONMENT=prod
+    - export VERSION=${CI_PIPELINE_ID}-${CI_COMMIT_SHA:0:8}
+    - export IMAGE=${GITOPS_PROD_REGISTRY}/${CI_PROJECT_ROOT_NAMESPACE}/${APP_NAME}:${VERSION}
+    - export AWS_ACCESS_KEY_ID=${GITOPS_PROD_AWS_ACCESS_KEY_ID}
+    - export AWS_SECRET_ACCESS_KEY=${GITOPS_PROD_AWS_SECRET_ACCESS_KEY}
+    - export AWS_DEFAULT_REGION=${GITOPS_PROD_AWS_DEFAULT_REGION}
+
+.vars_labs_template: &vars_labs
+  only:
+    - labs
+  environment: labs
+
+.vars_pre_template: &vars_pre
+  only:
+    - staging
+
+.vars_prod_template: &vars_prod
+  only:
+    - main
+
+.build_template: &build
+  stage: build
+  script:
+    - echo "Building the ${IMAGE}"
+    - docker build -t app .
+    - docker tag app ${IMAGE}
+    - $(aws ecr get-login --no-include-email)
+    - aws ecr create-repository --repository-name ${CI_PROJECT_ROOT_NAMESPACE}/${APP_NAME} || true
+    - POLICY_TEXT=$(cat docker/lifecycle.json | jq -c .)
+    - aws ecr put-lifecycle-policy --repository-name ${CI_PROJECT_ROOT_NAMESPACE}/${APP_NAME} --lifecycle-policy-text "${POLICY_TEXT}"
+    - docker push ${IMAGE}
+
+.deploy_template: &deploy
+  stage: deploy
+  image: alpine:3.11
+  script:
+    - apk add --no-cache git bash
+    - git clone ${GITOPS_LABS_ORIGIN}
+    - git config --global user.email "${GITLAB_USER_EMAIL}"
+    - git config --global user.name "${GITLAB_USER_NAME}"
+    - cd shikamaru
+    - git checkout -B main
+    - bash templates/ci-script.sh ${ENVIRONMENT} ${APP_NAME} ${CI_PROJECT_ROOT_NAMESPACE} ${VERSION}
+    - git add --all
+    - git commit -am "New ${APP_NAME} version ${VERSION} in ${CI_PROJECT_ROOT_NAMESPACE}/${CI_PROJECT_NAME}"
+    - git pull origin main && git push origin main
+
+build_labs:
+  <<: *vars_labs
+  <<: *before_script_labs
+  <<: *build
+
+deploy_labs:
+  <<: *vars_labs
+  <<: *before_script_labs
+  <<: *deploy
+  needs: ["build_labs"]
+
+build_pre:
+  <<: *vars_pre
+  <<: *before_script_pre
+  <<: *build
+
+deploy_pre:
+  <<: *vars_pre
+  <<: *before_script_pre
+  <<: *deploy
+  needs: ["build_pre"]
+
+build_prod:
+  <<: *vars_prod
+  <<: *before_script_prod
+  <<: *build
+
+deploy_prod:
+  <<: *vars_prod
+  <<: *before_script_prod
+  <<: *deploy
+  needs: ["build_prod"]
+
+test_pytest:
+  stage: test
+  # allow_failure: true
+  script:
+    # Rename current directory with the job ID suffix to avoid name collisions with other jobs
+    - mv ${PWD} ${PWD}_${CI_JOB_ID}
+    - cd ${PWD}_${CI_JOB_ID}
+    - docker compose up -d redis-test postgres-test
+    - docker compose build uwsgi-test
+    - docker compose run --rm uwsgi-test ping -c 3 -W 3 postgres-test
+    - docker compose run --rm uwsgi-test ping -c 3 -W 3 redis-test
+    - docker compose run --rm uwsgi-test run-tests
+    - docker compose down
+
+security:
+  stage: test
+  allow_failure: true
+  image:
+    name: 'aquasec/trivy:0.41.0'
+    entrypoint: [""]
+  script:
+    # Generate a gl-container-scanning-report.json file
+    - time trivy --quiet fs --severity HIGH,CRITICAL --ignore-unfixed --no-progress --exit-code 0 --format template --template "@/contrib/gitlab.tpl" --output "./gl-container-scanning-report.json" ./
+    # Print the security table
+    - trivy --quiet fs --severity HIGH,CRITICAL --ignore-unfixed --no-progress --exit-code 1 ./
+  artifacts:
+    when: always
+    reports:
+      container_scanning: gl-container-scanning-report.json
