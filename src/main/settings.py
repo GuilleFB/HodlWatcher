@@ -5,7 +5,6 @@ from configurations import Configuration
 from django.contrib.messages import constants as messages
 from kaio import Options, mixins
 
-
 opts = Options()
 
 

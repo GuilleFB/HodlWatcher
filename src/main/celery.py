@@ -5,10 +5,10 @@ from celery import Celery
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
 os.environ.setdefault("DJANGO_CONFIGURATION", "Base")
 
-# Compatibility with django-configurations
-from django.conf import settings  # noqa
 from configurations import importer  # noqa
 
+# Compatibility with django-configurations
+from django.conf import settings  # noqa
 
 importer.install()
 

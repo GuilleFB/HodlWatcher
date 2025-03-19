@@ -7,7 +7,6 @@ from django.utils.translation import gettext as _
 
 from main import views as main_views
 
-
 admin.site.site_header = _("HodlWatcher Administration")
 admin.site.site_title = _("HodlWatcher Admin")
 

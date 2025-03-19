@@ -1,9 +1,9 @@
-import pytest
 from io import StringIO
 
-from django.db.migrations.loader import MigrationLoader
+import pytest
 from django.core.management import BaseCommand, call_command
 from django.db import DEFAULT_DB_ALIAS, connections
+from django.db.migrations.loader import MigrationLoader
 from django_migration_checker import get_conflicts
 
 
