@@ -55,6 +55,8 @@ class Base(
         "django.contrib.staticfiles",
         # apps
         "main",
+        "alertas_bot",
+        "bot",
         # 3rd parties
         "compressor",
         "constance",
@@ -129,7 +131,10 @@ class Base(
     # Constance
     CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
     CONSTANCE_DATABASE_CACHE_BACKEND = "default"
-    CONSTANCE_CONFIG = {"THE_ANSWER": (42, "Answer to the Ultimate Question of Life, The Universe, and Everything")}
+    CONSTANCE_CONFIG = {
+        "THE_ANSWER": (42, "Answer to the Ultimate Question of Life, The Universe, and Everything"),
+        "TELEGRAM_BOT_TOKEN": ("token", "Token del bot de Telegram"),
+    }
 
     # Robots
     ROBOTS_SITEMAP_URLS = [opts.get("SITEMAP_URL", "")]

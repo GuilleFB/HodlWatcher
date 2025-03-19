@@ -18,6 +18,7 @@ urlpatterns = [
     path("yubin/", include("django_yubin.urls")),
     path("robots.txt", include("robots.urls")),
     path("admin/", admin.site.urls),
+    path("", include("alertas_bot.urls")),
 ]
 urlpatterns += staticfiles_urlpatterns()
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
