@@ -22,9 +22,9 @@ DATABASE_USER     = uHodlWatcher
 DATABASE_PASSWORD = e0tTen5waSx8PB5AWIS2q7XVJk2tcV1LIwAUjlpqrkP4Hbdrgv
 DATABASE_CONN_MAX_AGE   = 30
 
-; TEST_DATABASE_USER      = apsl
+; TEST_DATABASE_USER      = user
 ; TEST_DATABASE_ENGINE    = postgresql
-; TEST_DATABASE_HOST      = change-me.apsl.net
+; TEST_DATABASE_HOST      = change-me.user.net
 ; TEST_DATABASE_NAME      = HodlWatcher_test_db
 ; TEST_DATABASE_PORT      = 5434
 ; TEST_DATABASE_PASSWORD  = 1234

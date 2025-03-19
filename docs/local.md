@@ -316,9 +316,9 @@ option.
 If you need features from a Postgres database, the *app.ini* file contains a commented section to allow to configure
 a Postgres in memory testing database:
   ```ini
-  TEST_DATABASE_USER      = apsl
+  TEST_DATABASE_USER      = user
   TEST_DATABASE_ENGINE    = postgresql
-  TEST_DATABASE_HOST      = canape.apsl.net
+  TEST_DATABASE_HOST      = canape.user.net
   TEST_DATABASE_NAME      = HodlWatcher_test_db
   TEST_DATABASE_PORT      = 5434
   TEST_DATABASE_PASSWORD  = 1234

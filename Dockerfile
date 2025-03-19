@@ -1,6 +1,5 @@
 # https://hub.docker.com/_/python/
-FROM registry.apsl.net/library/django-cookiecutter-base:2024-10-08
-#FROM python:3.11-bullseye
+FROM python:3.11-bullseye
 
 ARG APP_ENV=prod
 

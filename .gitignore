@@ -1,10 +1,10 @@
-# APSL custom ignores
+# Custom ignores
 
 *.sqlite
 *.geany
 app.ini
 
-# End of APSL custom ignores
+# End custom ignores
 
 
 # Created by https://www.gitignore.io/api/django,python,node,eclipse,pycharm,netbeans,visualstudiocode,windows,linux,macos
