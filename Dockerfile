@@ -13,17 +13,16 @@ COPY system-dev-requirements.txt ./system-dev-requirements.txt
 
 RUN <<EOF
     apt-get -qq update
-    xargs apt-get -qq install < system-requirements.txt
+    xargs apt-get -qq install -y < system-requirements.txt
     if [ ${APP_ENV} = "devel" ]; then
-        xargs apt-get -qq install < system-dev-requirements.txt
+        xargs apt-get -qq install -y < system-dev-requirements.txt
     fi
     rm -rf /var/lib/apt/lists/*
 EOF
 
 # pipenv
 COPY Pipfile* ./
-RUN  [ -f Pipfile.lock ]
-RUN pipenv install $(test $APP_ENV = devel && echo "--dev") --system --deploy
+RUN [ -f Pipfile.lock ] && pipenv install "$(test $APP_ENV = devel && echo "--dev")" --system --deploy
 # end pipenv
 
 #ENV ENABLE_BASIC_AUTH=True \
@@ -52,7 +51,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["run-uwsgi"]
 EXPOSE 8080 1717
 
-HEALTHCHECK --interval=30s --timeout=3s CMD launch-probe
+HEALTHCHECK --interval=30s --timeout=3s CMD ["launch-probe"]
 
 RUN echo "Compiling messages..." && \
     CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py compilemessages && \

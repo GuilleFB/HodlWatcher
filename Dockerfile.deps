@@ -3,7 +3,7 @@ FROM python:3.11-bullseye
 
 COPY docker/locale.gen /etc/locale.gen
 COPY system-requirements.txt /srv/system-requirements.txt
-RUN  apt-get -qq update && xargs apt-get -qq install < /srv/system-requirements.txt
+RUN  apt-get -qq update && xargs apt-get -qq install -y < /srv/system-requirements.txt && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /deps
 
