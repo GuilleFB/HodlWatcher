@@ -16,6 +16,14 @@ from bot.models import UsuarioTelegram
 
 from .forms import ConfiguracionForm, ContactForm
 from .models import Configuracion, ContactMessage
+from django.core.cache import cache
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from .utils import extract_payment_methods
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ResumeView(TemplateView):
@@ -140,103 +148,136 @@ def delete_account(request):
 class BuscadorView(TemplateView):
     template_name = "buscador.html"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.http_client = self._create_http_client()
+
+    def _create_http_client(self):
+        """Crea un cliente HTTP con retries y headers personalizados"""
+        session = requests.Session()
+        retries = Retry(
+            total=3, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"]
+        )
+        session.mount("https://", HTTPAdapter(max_retries=retries))
+        session.headers.update({"User-Agent": "HodlWatcher/1.0 (+https://tudominio.com)", "Accept": "application/json"})
+        return session
+
     def get_average_price(self, currency):
-        """Obtiene el precio promedio de BTC de los principales exchanges"""
-        exchanges = [
-            # Exchange, URL, clave de acceso al precio, factor de conversión (para exchanges con diferentes formatos)
+        """Obtiene el precio promedio de BTC con cache y manejo de errores"""
+        cache_key = f"average_price_{currency}"
+        cached_price = cache.get(cache_key)
+
+        if cached_price:
+            logger.info(f"Average price for {currency} retrieved from cache")
+            return cached_price
+
+        exchanges = self._get_exchange_data(currency)
+        prices = self._fetch_prices_from_exchanges(exchanges)
+
+        average_price = self._calculate_average_price(prices)
+        cache.set(cache_key, average_price, 300)  # 5 minutos
+        return average_price
+
+    def _get_exchange_data(self, currency):
+        """Define exchange data"""
+        return [
             ("Binance", f"https://api.binance.com/api/v3/avgPrice?symbol=BTC{currency}", "price", 1),
             ("Coinbase", f"https://api.coinbase.com/v2/prices/BTC-{currency}/spot", "data.amount", 1),
             ("Kraken", f"https://api.kraken.com/0/public/Ticker?pair=XBT{currency}", "result.XXBTZ{currency}.c.0", 1),
             ("Gemini", f"https://api.gemini.com/v1/pubticker/btc{currency.lower()}", "last", 1),
         ]
 
+    def _fetch_prices_from_exchanges(self, exchanges):
+        """Fetch prices from exchanges"""
         prices = []
         for name, url, price_key, factor in exchanges:
             try:
-                response = requests.get(url, timeout=2, headers={"User-Agent": "Mozilla/5.0"})
-                response.raise_for_status()
-                data = response.json()
+                price = self._fetch_price_from_exchange(url, price_key)
+                if price:
+                    price_value = float(price) * factor
+                    if price_value > 0:
+                        prices.append(price_value)
+            except Exception as e:
+                print(f"Error en {name}: {str(e)}")
+        return prices
 
-                # Acceso al precio usando notación de puntos o índices
-                price = data
-                for key in price_key.split("."):
-                    if key.startswith("[") and key.endswith("]"):
-                        index = int(key[1:-1])
-                        price = price[index]
-                    else:
-                        price = price.get(key, {})
+    def _fetch_price_from_exchange(self, url, price_key):
+        """Fetch price from a single exchange"""
+        response = self.http_client.get(url, timeout=3)
+        response.raise_for_status()
+        data = response.json()
 
-                if isinstance(price, (int, float)) and price > 0:
-                    prices.append(float(price) * factor)
-                elif isinstance(price, str):
-                    prices.append(float(price) * factor)
+        price = data
+        for key in price_key.split("."):
+            if key.startswith("[") and key.endswith("]"):
+                index = int(key[1:-1])
+                price = price[index]
+            else:
+                price = price.get(key, None)
+                if price is None:
+                    break
+        return price
 
-            except (requests.RequestException, ValueError, KeyError, IndexError, AttributeError) as e:
-                print(f"Error obteniendo precio de {name}: {str(e)}")
-                continue
-
-        # Filtramos outliers (precios fuera de 2 desviaciones estándar)
-        if len(prices) >= 3:
-            prices_array = np.array(prices)
-            mean = np.mean(prices_array)
-            std = np.std(prices_array)
-            filtered_prices = [p for p in prices if mean - 2 * std <= p <= mean + 2 * std]
-            return sum(filtered_prices) / len(filtered_prices) if filtered_prices else None
-
-        return sum(prices) / len(prices) if prices else None
+    def _calculate_average_price(self, prices):
+        """Calculate average price with filtering"""
+        if len(prices) >= 2:
+            try:
+                prices_array = np.array(prices)
+                mean = np.mean(prices_array)
+                std = np.std(prices_array)
+                filtered_prices = [p for p in prices if mean - 2 * std <= p <= mean + 2 * std]
+                return sum(filtered_prices) / len(filtered_prices) if filtered_prices else None
+            except:
+                return sum(prices) / len(prices) if prices else None
+        return None
 
     def calculate_price_deviation(self, offers, average_price):
-        """
-        Calcula la desviación porcentual de precio para cada oferta.
+        """Calcula la desviación con manejo de errores mejorado"""
+        if not offers or not average_price or average_price <= 0:
+            return [{"error": "Invalid input data"}]
 
-        :param offers: Lista de ofertas
-        :param average_price: Precio promedio de mercado
-        :return: Lista de ofertas con desviación porcentual añadida
-        """
-        if not average_price or average_price == 0:
-            return offers
-
+        processed_offers = []
         for offer in offers:
             try:
-                # Asegúrate de que el precio de la oferta es un número
                 offer_price = float(offer.get("price", 0))
-
-                # Calcula la desviación porcentual
                 percent_deviation = ((offer_price - average_price) / average_price) * 100
-
-                # Redondea a dos decimales
                 offer["percent_deviation"] = round(percent_deviation, 2)
             except (TypeError, ValueError, KeyError) as e:
-                # Manejo de errores si falta algún dato o hay problemas de conversión
+                offer["percent_deviation"] = None
                 print(f"Error calculando desviación: {e}")
-                offer["percent_deviation"] = 0
+            processed_offers.append(offer)
 
-        return offers
+        return processed_offers if processed_offers else [{"error": "No valid offers processed"}]
+
+    def _cached_payment_methods(self):
+        """Obtiene los métodos de pago con cache"""
+        cache_key = "payment_methods"
+        cached_payment_methods = cache.get(cache_key)
+
+        if cached_payment_methods:
+            logging.info("Payment methods retrieved from cache")
+            return cached_payment_methods
+
+        paymet_methods = extract_payment_methods()
+        cache.set(cache_key, paymet_methods, 60 * 60 * 24 * 1)  # 1 día
+        return paymet_methods
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["request"] = self.request
 
         # Configuración inicial
-        context["payment_methods"] = [
-            {"id": "52", "name": "Transferencia Bancaria"},
-            {"id": "37", "name": "PayPal"},
-            {"id": "74", "name": "Revolut"},
-            {"id": "75", "name": "Bizum"},
-        ]
+        context.update(
+            {
+                "payment_methods": self._cached_payment_methods(),
+                "assets": [{"code": "BTC", "name": "Bitcoin"}],
+                "currencies": [
+                    {"code": "EUR", "name": "Euros"},
+                    {"code": "USD", "name": "American Dolar"},
+                ],
+            }
+        )
 
-        context["assets"] = [
-            {"code": "BTC", "name": "Bitcoin"},
-            {"code": "ETH", "name": "Ethereum"},
-            {"code": "USDT", "name": "Tether"},
-        ]
-
-        context["currencies"] = [
-            {"code": "EUR", "name": "Euros"},
-            {"code": "USD", "name": "Dólares"},
-        ]
-
-        # Obtener parámetros de la URL o valores por defecto
         params = {
             "side": self.request.GET.get("side", "sell"),
             "payment_method_id": self.request.GET.get("payment_method_id", "52"),
@@ -244,37 +285,36 @@ class BuscadorView(TemplateView):
             "currency_code": self.request.GET.get("currency_code", "EUR"),
             "amount": self.request.GET.get("amount", "150"),
         }
-
         context["form_data"] = params
 
-        # Si hay parámetros de búsqueda, hacer la llamada a la API
         if any(self.request.GET.get(param) for param in params.keys()):
             try:
-                # Obtener precio promedio
+                # Obtener precio promedio (con cache)
                 average_price = self.get_average_price(params["currency_code"])
                 context["average_price"] = average_price
 
                 # Obtener ofertas
-                api_url = "https://hodlhodl.com/api/v1/offers"
-                api_params = {f"filters[{key}]": value for key, value in params.items()}
-                api_params["filters[include_global]"] = "true"
-                api_params["pagination[limit]"] = "100"
-
-                response = requests.get(api_url, params=api_params)
+                response = self.http_client.get(
+                    "https://hodlhodl.com/api/v1/offers",
+                    params={
+                        **{f"filters[{k}]": v for k, v in params.items()},
+                        "filters[include_global]": "true",
+                        "pagination[limit]": "100",
+                    },
+                )
                 response.raise_for_status()
-
                 data = response.json()
 
-                # Filtrar ofertas con al menos una transacción
+                # Filtrar y procesar ofertas
                 offers = [
                     offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
                 ]
-
-                # Calcular desviación de precio
                 context["offers"] = self.calculate_price_deviation(offers, average_price)
                 context["meta"] = data.get("meta", {})
 
             except requests.RequestException as e:
-                context["error"] = str(e)
+                context["error"] = f"Error al obtener datos: {str(e)}"
+                context["offers"] = []
+                context["average_price"] = None
 
         return context

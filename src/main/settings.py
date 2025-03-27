@@ -145,6 +145,7 @@ class Base(
 
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"  # Usa el backend de caché por defecto
 
     # Constance
     CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
@@ -273,6 +274,28 @@ class Base(
     # Invisible v3 reCAPTCHA
     RECAPTCHA_PUBLIC_KEY = "6LfpWP8qAAAAAGb2VtG8bYs-k4wxG-J4lbSWXfW2"
     RECAPTCHA_PRIVATE_KEY = "6LfpWP8qAAAAADwUclMq-jUGcHfMxb_ac8iUZc30"
+
+    # Celery settings
+    CELERY_APP = "main"
+    CELERY_BROKER_URL = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/1",  # Especifica el número de base de datos
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+            },
+            "KEY_PREFIX": "hodlwatcher",  # Añade un prefijo opcional
+        }
+    }
+
+    # Email Yubin
+    EMAIL_BACKEND = "django_yubin.backends.QueuedEmailBackend"
+    MAILER_USE_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    DEFAULT_FROM_EMAIL = opts.get("DEFAULT_FROM_EMAIL", "info@hodldogwatcher.net")
 
 
 class Test(Base):
