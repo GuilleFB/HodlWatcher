@@ -1,6 +1,6 @@
-class HelloWorld {
+class HodlWatcher {
   constructor() {
-    console.log('Hello, World!')
+    console.log('Hello, HodlWatcher!')
   }
 }
-new HelloWorld()
+new HodlWatcher()

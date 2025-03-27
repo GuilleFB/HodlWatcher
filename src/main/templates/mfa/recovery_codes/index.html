@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load allauth %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% translate "Recovery Codes" %} | HodlWatcher{% endblock title %}
+
+{% block content %}
+<div class="container px-5 my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">{% translate "Recovery Codes" %}</span></h1>
+    </div>
+    <div class="row gx-5 justify-content-center">
+        <div class="col-lg-11 col-xl-9 col-xxl-8">
+            <!-- Recovery Codes Section -->
+            <section>
+                <div class="card shadow border-0 rounded-4 mb-5">
+                    <div class="card-body p-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="feature bg-primary text-white rounded-3 me-3">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">{% translate "Two-Factor Recovery Codes" %}</span></h3>
+                        </div>
+
+                        <div class="mb-4">
+                            <p class="lead">
+                                {% blocktranslate count unused_count=unused_codes|length %}
+                                    There is {{ unused_count }} out of {{ total_count }} recovery codes available.
+                                {% plural %}
+                                    There are {{ unused_count }} out of {{ total_count }} recovery codes available.
+                                {% endblocktranslate %}
+                            </p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="recovery_codes" class="form-label fw-bold">{% translate "Unused codes" %}</label>
+                            <textarea id="recovery_codes" class="form-control" rows="{{ unused_codes|length }}" readonly disabled>{% for code in unused_codes %}{% if not forloop.first %}
+{% endif %}{{ code }}{% endfor %}</textarea>
+                            <div class="form-text">{% translate "Save these codes in a secure place. Each code can be used only once." %}</div>
+                        </div>
+
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
+                            {% if unused_codes %}
+                                {% url 'mfa_download_recovery_codes' as download_url %}
+                                <a href="{{ download_url }}" class="btn btn-primary me-md-2">
+                                    <i class="bi bi-download me-2"></i>{% translate "Download codes" %}
+                                </a>
+                            {% endif %}
+
+                            {% url 'mfa_generate_recovery_codes' as generate_url %}
+                            <a href="{{ generate_url }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-repeat me-2"></i>{% translate "Generate new codes" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock content %}

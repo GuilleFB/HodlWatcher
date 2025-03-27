@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,7 @@ class Base(
     """
 
     DEBUG = opts.get("DEBUG", True)
+    MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG
 
     # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = opts.get("APP_ROOT", Path(__file__).resolve().parent.parent)
@@ -53,6 +55,10 @@ class Base(
         "django.contrib.sites",
         "django.contrib.messages",
         "django.contrib.staticfiles",
+        "django.contrib.humanize",
+        "allauth",
+        "allauth.account",
+        "allauth.mfa",
         # apps
         "main",
         "alertas_bot",
@@ -70,6 +76,9 @@ class Base(
         "django_celery_beat",
         "django_celery_results",
         "django_prometheus",
+        "crispy_forms",
+        "crispy_bootstrap5",
+        "django_recaptcha",
     ]
 
     HEALTH_CHECK_APPS = [
@@ -94,6 +103,7 @@ class Base(
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "django_prometheus.middleware.PrometheusAfterMiddleware",
+        "allauth.account.middleware.AccountMiddleware",
     ]
 
     # SecurityMiddleware options
@@ -102,6 +112,10 @@ class Base(
     TEMPLATES: list[dict[str, Any]] = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [
+                os.path.join(BASE_DIR, "main/templates"),
+                # insert additional TEMPLATE_DIRS here
+            ],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
@@ -118,6 +132,10 @@ class Base(
             },
         },
     ]
+
+    CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+    CRISPY_TEMPLATE_PACK = "bootstrap5"
 
     # Bootstrap 3 alerts integration with Django messages
     MESSAGE_TAGS = {
@@ -160,6 +178,101 @@ class Base(
         {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
         {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
     ]
+
+    AUTHENTICATION_BACKENDS = [
+        # Needed to login by username in Django admin, regardless of `allauth`
+        "django.contrib.auth.backends.ModelBackend",
+        # `allauth` specific authentication methods, such as login by email
+        "allauth.account.auth_backends.AuthenticationBackend",
+    ]
+
+    # Métodos de autenticación (solo email)
+    ACCOUNT_LOGIN_METHODS = {"email"}  # Usar solo email para el login
+
+    # Campos requeridos en el registro
+    ACCOUNT_SIGNUP_FIELDS = {"username*", "email*", "password1*", "password2*"}  # Email y password obligatorios
+
+    ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+    # Verificación de email
+    ACCOUNT_EMAIL_SUBJECT_PREFIX = "[HodlWatcher] "  # Prefijo en los emails
+    ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Requiere verificación antes de iniciar sesión
+    ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1  # Días antes de que expire el enlace de confirmación
+
+    # URLs de redirección
+    ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "home"
+    ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "account_login"
+    ACCOUNT_EMAIL_CONFIRMATION_URL = "account_confirm_email"
+
+    # Configuración del login
+    ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True  # Iniciar sesión automáticamente tras confirmar email
+    ACCOUNT_LOGIN_ON_PASSWORD_RESET = True  # Iniciar sesión automáticamente tras resetear contraseña
+
+    # Configuración del logout
+    ACCOUNT_LOGOUT_ON_GET = True  # Cerrar sesión al acceder a la URL de logout
+
+    # Unicidad del email
+    ACCOUNT_UNIQUE_EMAIL = True  # No se permiten emails duplicados
+
+    ACCOUNT_EMAIL_NOTIFICATIONS = True  # Enviar notificaciones por email
+
+    ACCOUNT_USERNAME_BLACKLIST = ["admin", "root", "superuser"]  # No permitir estos usernames
+
+    # URLs de redirección después del login/logout
+    LOGIN_REDIRECT_URL = "/"
+    LOGOUT_REDIRECT_URL = "/"
+
+    MFA_ENABLED = True  # Habilitar la autenticación de dos factores
+
+    # Habilitar tipos de MFA disponibles
+    MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]  # Tipos de MFA disponibles
+
+    # Configurar TOTP (Google Authenticator, Authy, etc.)
+    MFA_TOTP_ISSUER = "HodlWatcher"  # Nombre que aparecerá en la app de autenticación
+    MFA_TOTP_PERIOD = 30  # Código válido por 30 segundos
+    MFA_TOTP_DIGITS = 6  # Código de 6 dígitos (estándar)
+    MFA_TOTP_TOLERANCE = 1  # Permitir 1 paso en el pasado/futuro por desfase de reloj
+
+    # Configurar códigos de recuperación
+    MFA_RECOVERY_CODE_COUNT = 10  # Generar 10 códigos de recuperación
+    MFA_RECOVERY_CODE_DIGITS = 8  # Cada código tiene 8 dígitos
+
+    # Opcional: Configurar WebAuthn (Passkeys)
+    MFA_PASSKEY_LOGIN_ENABLED = True  # Deshabilitado por defecto
+    MFA_PASSKEY_SIGNUP_ENABLED = True  # Deshabilitado por defecto
+
+    # Habilitar el login con MFA
+    # LOGIN_URL = "mfa_login"  # Redirigir al login con MFA
+    LOGIN_URL = "account_login"  # Redirigir al login normal
+    # LOGIN_REDIRECT_URL = "home"  # Redirigir al home después de login
+
+    MFA_FORMS = {
+        "authenticate": "allauth.mfa.base.forms.AuthenticateForm",
+        "reauthenticate": "allauth.mfa.base.forms.AuthenticateForm",
+        "activate_totp": "allauth.mfa.totp.forms.ActivateTOTPForm",
+        "deactivate_totp": "allauth.mfa.totp.forms.DeactivateTOTPForm",
+        "generate_recovery_codes": "allauth.mfa.recovery_codes.forms.GenerateRecoveryCodesForm",
+    }
+
+    ACCOUNT_FORMS = {
+        "add_email": "allauth.account.forms.AddEmailForm",
+        "change_password": "allauth.account.forms.ChangePasswordForm",
+        "confirm_login_code": "allauth.account.forms.ConfirmLoginCodeForm",
+        "login": "allauth.account.forms.LoginForm",
+        "request_login_code": "allauth.account.forms.RequestLoginCodeForm",
+        "reset_password": "allauth.account.forms.ResetPasswordForm",
+        "reset_password_from_key": "allauth.account.forms.ResetPasswordKeyForm",
+        "set_password": "allauth.account.forms.SetPasswordForm",
+        "signup": "allauth.account.forms.SignupForm",
+        "user_token": "allauth.account.forms.UserTokenForm",
+    }
+
+    SESSION_COOKIE_AGE = 60 * 60 * 24 * 1  # 1 días
+    SESSION_COOKIE_SECURE = True
+
+    # Invisible v3 reCAPTCHA
+    RECAPTCHA_PUBLIC_KEY = "6LfpWP8qAAAAAGb2VtG8bYs-k4wxG-J4lbSWXfW2"
+    RECAPTCHA_PRIVATE_KEY = "6LfpWP8qAAAAADwUclMq-jUGcHfMxb_ac8iUZc30"
 
 
 class Test(Base):

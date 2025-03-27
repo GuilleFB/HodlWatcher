@@ -9,7 +9,7 @@ python_version = "3.11"
 [packages]
 boto3 = "==1.26.129"
 celery = "==5.2.7"
-django = "==4.2.16"
+django = "==4.2.20"
 django-celery-beat = "==2.5.0"
 django-celery-results = "==2.5.0"
 django-compressor = "==4.3.1"
@@ -28,9 +28,16 @@ django-yubin = "==2.0.5"
 flower = "==1.2.0"
 psycopg = {version = "==3.1.9", extras = ["binary"]}
 redis = "==4.5.5"
-sentry-sdk = "==1.22.2"
+sentry-sdk = "==2.8.0"
 uwsgi = "==2.0.22"
-python-telegram-bot = "*"
+python-telegram-bot = "==22.0"
+django-allauth = {extras = ["mfa"], version = "==65.5.0"}
+pillow = "==11.1.0"
+crispy-bootstrap5 = "==2024.10"
+django-crispy-forms = "==2.3"
+django-recaptcha = "*"
+requests = "*"
+numpy = "*"
 
 [dev-packages]
 autoflake = "==1.7.8"

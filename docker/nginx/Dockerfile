@@ -6,9 +6,9 @@ ENV ENABLE_BASIC_AUTH=False \
     ENABLE_3W_REDIRECT=False \
     UWSGI_ADDR=
 
-RUN apk add --update bash
-
-RUN rm /etc/nginx/conf.d/*
+RUN apk add --no-cache bash && \
+    rm -rf /var/cache/apk && \
+    rm /etc/nginx/conf.d/*
 COPY htpasswd nginx.conf proxy_params /etc/nginx/
 COPY entrypoint.sh /
 
