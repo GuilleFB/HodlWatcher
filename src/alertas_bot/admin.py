@@ -1,6 +1,17 @@
 from django.contrib import admin
 
-from .models import Configuracion
+from .models import Configuracion, UsuarioTelegram
+
+
+@admin.register(UsuarioTelegram)
+class UsuarioTelegramAdmin(admin.ModelAdmin):
+    list_display = ("chat_id", "username")
+    search_fields = ("chat_id", "username")
+    ordering = ("chat_id", "username")
+    fields = ("chat_id", "username")
+    readonly_fields = ("chat_id", "username")
+    list_per_page = 50
+    list_max_show_all = 100
 
 
 @admin.register(Configuracion)

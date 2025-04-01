@@ -7,6 +7,9 @@ from .views import (
     ProfileUpdateView,
     ProjectsView,
     ResumeView,
+    WatchdogCreateView,
+    WatchdogDeactivateView,
+    WatchdogListView,
     delete_account,
 )
 
@@ -17,5 +20,8 @@ urlpatterns = [
     path("resume/", ResumeView.as_view(), name="resume"),
     path("profile/", ProfileUpdateView.as_view(), name="profile"),
     path("delete-account/", delete_account, name="delete_account"),
-    path("buscador/", BuscadorView.as_view(), name="buscador"),
+    path("finder/", BuscadorView.as_view(), name="finder"),
+    path("watchdogs/list/", WatchdogListView.as_view(), name="watchdogs_list"),
+    path("watchdog/new/", WatchdogCreateView.as_view(), name="create_watchdog"),
+    path("watchdog/<uuid:pk>/deactivate/", WatchdogDeactivateView.as_view(), name="deactivate_watchdog"),
 ]

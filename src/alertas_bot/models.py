@@ -1,8 +1,16 @@
+import uuid
+
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
 
-from bot.models import UsuarioTelegram
+
+class UsuarioTelegram(models.Model):
+    chat_id = models.BigIntegerField(unique=True)
+    username = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.username or f"ID: {self.chat_id}"
 
 
 class ContactMessage(models.Model):
@@ -29,8 +37,50 @@ class ContactMessage(models.Model):
 
 class Configuracion(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    user_telegram = models.ForeignKey(UsuarioTelegram, on_delete=models.SET_NULL, null=True, blank=True)
+    user_telegram = models.OneToOneField(UsuarioTelegram, on_delete=models.SET_NULL, null=True, blank=True)
     image = models.ImageField(upload_to="profile_pics/", default="default.jpg")
 
     def __str__(self):
         return f"Config for {self.user.username}"
+
+
+class InvestmentWatchdog(models.Model):
+    SIDE_CHOICES = [
+        ("buy", "Buy"),
+        ("sell", "Sell"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watchdogs")
+    currency = models.CharField(max_length=3, default="EUR")
+    side = models.CharField(max_length=4, choices=SIDE_CHOICES, default="sell")
+    rate_fee = models.DecimalField("Rate Fee (%)", max_digits=4, decimal_places=2, default=0)
+    payment_method_id = models.CharField(max_length=3, default="EUR")
+    amount = models.PositiveIntegerField()
+    asset_code = models.CharField(max_length=3, default="BTC")
+    created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Watchdog de {self.user.email} - {self.currency}"
+
+    class Meta:
+        verbose_name = "Watchdog"
+        verbose_name_plural = "Watchdogs"
+        ordering = ["-created_at"]
+
+
+class WatchdogNotification(models.Model):
+    watchdog = models.ForeignKey(InvestmentWatchdog, on_delete=models.CASCADE, related_name="notifications")
+    offer_id = models.CharField(max_length=100)
+    notified_at = models.DateTimeField(auto_now_add=True)
+    offer_details = models.JSONField(blank=True, null=True)  # Guarda detalles importantes de la oferta
+    is_active = models.BooleanField(default=True)  # Indica si la oferta sigue activa
+
+    class Meta:
+        unique_together = ("watchdog", "offer_id")
+        verbose_name = "Notificación de Watchdog"
+        verbose_name_plural = "Notificaciones de Watchdog"
+
+    def __str__(self):
+        return f"Notificación para {self.watchdog} - Oferta {self.offer_id}"

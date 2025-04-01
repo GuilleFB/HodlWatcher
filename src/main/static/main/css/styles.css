@@ -11737,3 +11737,50 @@ html {
 .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1) !important; }
 .bg-soft-warning { background-color: rgba(255, 193, 7, 0.1) !important; }
 .bg-soft-info { background-color: rgba(23, 162, 184, 0.1) !important; }
+
+/* Estilos para íconos de criptomonedas */
+.crypto-icon {
+    transition: all 0.3s ease;
+    object-fit: contain;
+}
+
+.crypto-icon:hover {
+    transform: scale(1.1);
+}
+
+.crypto-icon-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: white;
+}
+
+.features-section {
+    background-color: #f8f9fa;
+}
+.icon-background {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(79, 70, 229, 0.1);
+    margin-bottom: 1rem;
+}
+.feature-title {
+    font-size: 1.5rem;
+    color: #212529;
+}
+.feature-description {
+    line-height: 1.6;
+}
+.hover-lift {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}

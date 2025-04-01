@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.schedules import crontab
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "main.settings")
 os.environ.setdefault("DJANGO_CONFIGURATION", "Base")
@@ -20,16 +21,24 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 # Schedule tasks
 app.conf.beat_schedule = {
-    "celery-hello-every-1-minute": {
-        "task": "main.tasks.celery_hello",
-        "schedule": 60 * 60 * 1,  # 1 horas
-    },
     "update-prices-every-5-minutes": {
         "task": "main.tasks.update_price_cache",
         "schedule": 60 * 5,  # 5 minutos
     },
     "update-payment_methods-every-1-day": {
         "task": "main.tasks.update_payment_methods",
-        "schedule": 60 * 60 * 24 * 1,  # 1 día
+        "schedule": crontab(hour=4, minute=0),  # A las 4 AM cada día
+    },
+    "check-watchdogs-every-10-minutes": {
+        "task": "main.tasks.check_watchdogs",
+        "schedule": 60 * 10,  # Cada 10 minutos
+    },
+    "clean-old-notifications-daily": {
+        "task": "main.tasks.clean_old_notifications",
+        "schedule": crontab(hour=3, minute=0),  # A las 3 AM cada día
+    },
+    "update-offer-status-weekly": {
+        "task": "main.tasks.update_offer_status",
+        "schedule": crontab(hour=3, minute=0, day_of_week=0),  # Se ejecuta cada domingo a las 3:00 AM
     },
 }

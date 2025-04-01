@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static crispy_forms_tags hodl_tags %}
+
+{% block title %}Nuevo Watchdog{% endblock title %}
+
+{% block content %}
+<div class="container px-5 my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">Nuevo Watchdog</span></h1>
+    </div>
+    <div class="row gx-5 justify-content-center">
+        <div class="col-lg-11 col-xl-9 col-xxl-8">
+            {% if current_count >= max_watchdogs %}
+            <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-body p-5">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Ya tienes el máximo de {{ max_watchdogs }} watchdogs activos. Por favor desactiva uno antes de crear otro.
+                    </div>
+                    <a href="{% url 'watchdogs_list' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <form method="post" id="watchdogForm">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="feature bg-primary bg-gradient-primary-to-secondary text-white rounded-3 me-3">
+                            <i class="bi bi-gear-fill"></i>
+                        </div>
+                        <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Configuración</span></h3>
+                    </div>
+
+                    {{ form|crispy }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="feature bg-primary bg-gradient-primary-to-secondary text-white rounded-3 me-3">
+                            <i class="bi bi-card-checklist"></i>
+                        </div>
+                        <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Resumen</span></h3>
+                    </div>
+
+                    <!-- Nueva frase de resumen -->
+                    <div class="alert alert-primary mb-4">
+                        <i class="bi bi-chat-quote me-2"></i>
+                        <span id="dynamic-phrase">
+                            Quiero <span id="phrase-side">{{ summary_data.side|lower }}</span>
+                            <span id="phrase-amount">{{ summary_data.amount }}</span>
+                            <span id="phrase-currency">{{ summary_data.currency }}</span> de
+                            <span id="phrase-asset">{{ summary_data.asset }}</span> mediante
+                            "<span id="phrase-payment-method">{{ summary_data.payment_method }}</span>"
+                            con un fee rate menor a <span id="phrase-rate-fee">{{ summary_data.rate_fee }}</span>
+                        </span>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-light rounded-3">
+                      <div class="d-flex align-items-center mb-3">
+                          <div class="me-3">
+                              <span class="side-badge badge bg-{% if summary_data.side == 'Buy' %}danger{% else %}succes{% endif %} bg-opacity-10 text-{% if summary_data.side == 'Buy' %}danger{% else %}success{% endif %} border border-{% if summary_data.side == 'Buy' %}danger{% else %}success{% endif %} border-opacity-25 py-2 px-3">
+                                  <i class="side-icon bi bi-arrow-{% if summary_data.side == 'Buy' %}down{% else %}up{% endif %}-circle me-1"></i>
+                                  <span class="summary-side">{% if summary_data.side == 'Buy'%}Sell{% else %}Buy{% endif %}</span>
+                              </span>
+                          </div>
+                      </div>
+
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <strong class="me-2">Activo:</strong>
+                                <span class="summary-asset me-2">{{ summary_data.asset }}</span><img class="crypto-icon" src="{% static 'main/assets/' %}{{ summary_data.asset|lower }}.svg" width="32" height="32" alt="{{ summary_data.asset }}">
+                            </li>
+                            <li class="mb-2">
+                                <strong class="me-2">Moneda:</strong>
+                                <span class="summary-currency me-2">{{ summary_data.currency }}</span><span class="currency-flag fi fi-{{ summary_data.currency|slice:':2'|lower }} fis me-2"></span>
+                            </li>
+                            <li class="mb-2">
+                                <strong class="me-2">Método de pago:</strong>
+                                <span class="summary-payment-method">{{ summary_data.payment_method }}</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong class="me-2">Cantidad:</strong>
+                                <span class="summary-amount">{{ summary_data.amount }}</span>
+                            </li>
+                            <li>
+                                <strong class="me-2">Tasa de fee:</strong>
+                                <span class="summary-rate-fee">{{ summary_data.rate_fee }}</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Tienes {{ current_count }} de {{ max_watchdogs }} watchdogs activos
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{% url 'watchdogs_list' %}" class="btn btn-outline-info me-md-2">
+            <i class="bi bi-list-ul me-1"></i> Watchdog List
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i> Crear Watchdog
+        </button>
+    </div>
+</form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block page_js %}
+<script src="{% static 'main/js/watchdog-form.js' %}"></script>
+<!-- Agregar este script al final de la página -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para actualizar la frase dinámica
+    function updateDynamicPhrase() {
+        // Obtener los valores actuales del formulario
+        const side = document.querySelector('.summary-side').textContent.toLowerCase();
+        const sideText = side === 'buy' ? 'vender' : 'comprar';
+        document.getElementById('phrase-side').textContent = sideText;
+
+        document.getElementById('phrase-amount').textContent = document.querySelector('.summary-amount').textContent;
+        document.getElementById('phrase-currency').textContent = document.querySelector('.summary-currency').textContent;
+        document.getElementById('phrase-asset').textContent = document.querySelector('.summary-asset').textContent;
+        document.getElementById('phrase-payment-method').textContent = document.querySelector('.summary-payment-method').textContent;
+        document.getElementById('phrase-rate-fee').textContent = document.querySelector('.summary-rate-fee').textContent;
+    }
+
+    // Observar cambios en el resumen para actualizar la frase
+    const observer = new MutationObserver(function(mutations) {
+        updateDynamicPhrase();
+    });
+
+    // Observar cambios en los elementos del resumen
+    const elementsToObserve = [
+        document.querySelector('.summary-amount'),
+        document.querySelector('.summary-currency'),
+        document.querySelector('.summary-asset'),
+        document.querySelector('.summary-payment-method'),
+        document.querySelector('.summary-rate-fee')
+    ];
+
+    elementsToObserve.forEach(element => {
+        if (element) {
+            observer.observe(element, { childList: true, characterData: true, subtree: true });
+        }
+    });
+
+    // Actualizar la frase inicialmente
+    updateDynamicPhrase();
+});
+</script>
+{% endblock page_js %}

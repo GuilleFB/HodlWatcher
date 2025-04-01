@@ -62,7 +62,6 @@ class Base(
         # apps
         "main",
         "alertas_bot",
-        "bot",
         # 3rd parties
         "compressor",
         "constance",
@@ -277,8 +276,8 @@ class Base(
 
     # Celery settings
     CELERY_APP = "main"
-    CELERY_BROKER_URL = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
-    CELERY_RESULT_BACKEND = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_BROKER_URL = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/1")
+    CELERY_RESULT_BACKEND = opts.get("CELERY_BROKER_URL", "redis://localhost:6379/1")
 
     CACHES = {
         "default": {
@@ -293,9 +292,16 @@ class Base(
     }
 
     # Email Yubin
-    EMAIL_BACKEND = "django_yubin.backends.QueuedEmailBackend"
-    MAILER_USE_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    DEFAULT_FROM_EMAIL = opts.get("DEFAULT_FROM_EMAIL", "info@hodldogwatcher.net")
+    EMAIL_BACKEND = opts.get("EMAIL_BACKEND", "")
+    MAILER_USE_BACKEND = opts.get("MAILER_USE_BACKEND", "")
+    DEFAULT_FROM_EMAIL = opts.get("DEFAULT_FROM_EMAIL", "")
+
+    # Configuración para envío de correos
+    EMAIL_HOST = opts.get("EMAIL_HOST", "")
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = opts.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = opts.get("EMAIL_HOST_PASSWORD", "")
 
 
 class Test(Base):

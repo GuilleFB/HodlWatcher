@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import requests
 from allauth.mfa import app_settings
@@ -7,21 +9,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import TemplateView, UpdateView
-from django.views.generic.edit import CreateView
-
-from bot.models import UsuarioTelegram
-
-from .forms import ConfiguracionForm, ContactForm
-from .models import Configuracion, ContactMessage
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, TemplateView, UpdateView, View
+from django.views.generic.edit import CreateView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from .utils import extract_payment_methods
 
-import logging
+from .forms import ConfiguracionForm, ContactForm, InvestmentWatchdogForm
+from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTelegram
+from .utils import extract_payment_methods
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +60,13 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         try:
             usuario_telegram = UsuarioTelegram.objects.filter(username=self.request.user.username).first()
 
-            configuracion, created = Configuracion.objects.get_or_create(
+            configuracion, _ = Configuracion.objects.get_or_create(
                 user=self.request.user, defaults={"user_telegram": usuario_telegram if usuario_telegram else None}
             )
             return configuracion
         except UsuarioTelegram.DoesNotExist:
             # Si no se encuentra usuario de Telegram, crea configuración sin él
-            configuracion, created = Configuracion.objects.get_or_create(user=self.request.user)
+            configuracion, _ = Configuracion.objects.get_or_create(user=self.request.user)
             return configuracion
 
     def form_valid(self, form):
@@ -181,7 +179,12 @@ class BuscadorView(TemplateView):
     def _get_exchange_data(self, currency):
         """Define exchange data"""
         return [
-            ("Binance", f"https://api.binance.com/api/v3/avgPrice?symbol=BTC{currency}", "price", 1),
+            (
+                "Binance",
+                f"https://api.binance.com/api/v3/ticker/price?symbol=BTC{'USDT' if currency == 'USD' else currency}",
+                "price",
+                1,
+            ),
             ("Coinbase", f"https://api.coinbase.com/v2/prices/BTC-{currency}/spot", "data.amount", 1),
             ("Kraken", f"https://api.kraken.com/0/public/Ticker?pair=XBT{currency}", "result.XXBTZ{currency}.c.0", 1),
             ("Gemini", f"https://api.gemini.com/v1/pubticker/btc{currency.lower()}", "last", 1),
@@ -259,7 +262,7 @@ class BuscadorView(TemplateView):
             return cached_payment_methods
 
         paymet_methods = extract_payment_methods()
-        cache.set(cache_key, paymet_methods, 60 * 60 * 24 * 1)  # 1 día
+        cache.set(cache_key, paymet_methods, 60 * 60 * 24 * 2)  # 2 día
         return paymet_methods
 
     def get_context_data(self, **kwargs):
@@ -318,3 +321,116 @@ class BuscadorView(TemplateView):
                 context["average_price"] = None
 
         return context
+
+
+class WatchdogListView(LoginRequiredMixin, ListView):
+    model = InvestmentWatchdog
+    template_name = "watchdog_list.html"
+    context_object_name = "watchdogs"
+
+    def get_queryset(self):
+        return self.request.user.watchdogs.filter(active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["max_watchdogs"] = 5
+        context["current_count"] = self.get_queryset().count()
+        return context
+
+
+class WatchdogCreateView(LoginRequiredMixin, CreateView):
+    model = InvestmentWatchdog
+    form_class = InvestmentWatchdogForm
+    template_name = "watchdog_form.html"
+    success_url = reverse_lazy("watchdogs_list")
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update(
+            {
+                "side": self.request.GET.get("side", "sell"),
+                "payment_method_id": self.request.GET.get("payment_method_id", "EUR"),
+                "asset_code": self.request.GET.get("asset_code", "BTC"),
+                "currency": self.request.GET.get("currency_code", "EUR"),
+                "amount": self.request.GET.get("amount", "150"),
+                "rate_fee": self.request.GET.get("rate_fee", "0"),
+            }
+        )
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "payment_methods": [
+                    {"code": "EUR", "name": "Transferencia SEPA"},
+                    {"code": "USD", "name": "Transferencia Bancaria"},
+                ],
+                "assets": [{"code": "BTC", "name": "Bitcoin"}],
+                "currencies": [
+                    {"code": "EUR", "name": "Euros"},
+                    {"code": "USD", "name": "Dólar Americano"},
+                ],
+                "current_count": self.request.user.watchdogs.filter(active=True).count(),
+                "max_watchdogs": 5,
+            }
+        )
+
+        # Preparar datos para el resumen
+        form = context["form"]
+        summary_data = {
+            "side": dict(InvestmentWatchdog.SIDE_CHOICES).get(form["side"].value(), "sell"),
+            "currency": next(
+                (c["name"] for c in context["currencies"] if c["code"] == form["currency"].value()), "EUR"
+            ),
+            "payment_method": next(
+                (p["name"] for p in context["payment_methods"] if p["code"] == form["payment_method_id"].value()),
+                "Transferencia SEPA",
+            ),
+            "asset": next((a["name"] for a in context["assets"] if a["code"] == form["asset_code"].value()), "Bitcoin"),
+            "amount": form["amount"].value() or "150",
+            "rate_fee": f"{float(form['rate_fee'].value() or 0):.2f}%",
+        }
+        context["summary_data"] = summary_data
+
+        return context
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, "Watchdog creado correctamente")
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.watchdogs.filter(active=True).count() >= 5:
+            messages.error(
+                request, "Ya tienes el máximo de 5 watchdogs activos. Por favor desactiva uno antes de crear otro."
+            )
+            return redirect("watchdogs_list")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class WatchdogDeactivateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
+        watchdog.active = False
+        watchdog.save()
+        messages.success(request, "Watchdog desactivado correctamente")
+        return redirect("watchdogs_list")
+
+
+@login_required
+def delete_investment_watchdog(request):
+    try:
+        watchdog = get_object_or_404(InvestmentWatchdog, pk=pk)
+        watchdog.delete()
+        messages.success(request, "The watchdog was deleted")
+
+    except InvestmentWatchdog.DoesNotExist:
+        messages.error(request, "Watchdog doesnot exist")
+        return redirect("home")
+
+    except Exception as e:
+        messages.error(request, e.message)
+        return redirect("profile")
+
+    return redirect("watchdogs_list")
