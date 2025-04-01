@@ -16,8 +16,11 @@
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xxl-start mb-3">
                       {% if not request.user.is_authenticated %}
                         <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">SignUp</a>
+                        <a class="btn btn-outline-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="#about">About</a>
+                      {% else %}
+                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">Watchdogs List</a>
+                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'finder' %}">Finder</a>
                       {% endif %}
-                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'finder' %}">Finder</a>
                     </div>
                 </div>
             </div>
@@ -149,7 +152,7 @@
 {% endblock header %}
 {% block about %}
 <!-- About Section-->
-<section class="bg-light py-5">
+<section id="about" class="bg-light py-5">
     <div class="container px-5">
         <div class="row gx-5 justify-content-center">
             <div class="col-xxl-8">
@@ -250,9 +253,6 @@
             </div>
         </div>
     </div>
-<style>
-
-</style>
 </section>
 {% endblock about %}
 {% block content %}

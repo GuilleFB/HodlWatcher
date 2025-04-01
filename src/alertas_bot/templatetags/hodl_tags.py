@@ -36,3 +36,9 @@ def multiply_by(value, arg):
         return float(value) * float(arg)
     except ValueError:
         return 0
+
+
+@register.filter
+def get_item(dictionary, key):
+    """Obtiene un valor de un diccionario usando una clave"""
+    return dictionary.get(key, key)

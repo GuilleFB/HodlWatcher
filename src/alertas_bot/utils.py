@@ -148,7 +148,7 @@ def process_watchdog(watchdog):
             if new_offers:
                 send_watchdog_notification(watchdog, new_offers, matching_offers["Filtered_fees"])
                 logger.info(
-                    f"Notificación enviada para watchdog {watchdog.id} - Se encontraron {len(new_offers)} nuevas ofertas"
+                    f"Notificación enviada para watchdog {watchdog.id}. Se encontraron {len(new_offers)} nuevas ofertas"
                 )
             else:
                 logger.debug(f"No hay nuevas ofertas para notificar en watchdog {watchdog.id}")

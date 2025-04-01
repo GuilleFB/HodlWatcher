@@ -4,20 +4,33 @@
 {% block title %}Mis Watchdogs{% endblock title %}
 
 {% block content %}
-<div class="container px-5 my-5">
+<div class="container-fluid px-4 my-5">
     <div class="text-center mb-5">
         <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">Mis Watchdogs</span></h1>
     </div>
-    <div class="row gx-5 justify-content-center">
-        <div class="col-lg-11 col-xl-9 col-xxl-8">
+    <div class="row justify-content-center">
+        <div class="col-lg-11 col-xl-10">
+            <!-- Sección de Watchdogs Activos -->
             <section>
                 <div class="card shadow border-0 rounded-4 mb-5">
-                    <div class="card-body p-5">
+                    <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-4">
                             <div class="feature bg-primary bg-gradient-primary-to-secondary text-white rounded-3 me-3">
                                 <i class="bi bi-bell-fill"></i>
                             </div>
                             <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Watchdogs Activos</span></h3>
+
+                            <div class="ms-auto">
+                                {% if current_count < max_watchdogs %}
+                                    <a href="{% url 'create_watchdog' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Nuevo Watchdog
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary" disabled>
+                                        <i class="bi bi-exclamation-circle"></i> Límite alcanzado
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="alert alert-info mb-4">
@@ -34,9 +47,10 @@
                                         <th>Activo</th>
                                         <th>Cantidad</th>
                                         <th>Moneda</th>
+                                        <th>Método</th>
                                         <th>Fee</th>
                                         <th>Fecha</th>
-                                        <th>Acciones</th>
+                                        <th class="text-end">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody class="border-top-0">
@@ -59,13 +73,21 @@
                                             <span class="fi fi-{{ watchdog.currency|lower }} fis me-2"></span>
                                             {{ watchdog.currency }}
                                         </td>
+                                        <td>
+                                          <i class="bi bi-credit-card me-1"></i>
+                                          {% if payment_methods_dict|get_item:watchdog.payment_method_id %}
+                                              {{ payment_methods_dict|get_item:watchdog.payment_method_id }}
+                                          {% else %}
+                                              {{ watchdog.payment_method_id }}
+                                          {% endif %}
+                                        </td>
                                         <td>{{ watchdog.rate_fee }}%</td>
                                         <td>{{ watchdog.created_at|date:"d/m/Y" }}</td>
-                                        <td>
+                                        <td class="text-end">
                                             <form method="post" action="{% url 'deactivate_watchdog' watchdog.pk %}">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="bi bi-bell-slash me-1"></i> Desactivar
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Desactivar Watchdog">
+                                                    <i class="bi bi-bell-slash"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -80,22 +102,170 @@
                             No tienes watchdogs activos
                         </div>
                         {% endif %}
+                    </div>
+                </div>
+            </section>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            {% if current_count < max_watchdogs %}
-                                <a href="{% url 'create_watchdog' %}" class="btn btn-primary">
-                                    <i class="bi bi-plus-circle me-1"></i> Nuevo Watchdog
-                                </a>
-                            {% else %}
-                                <button class="btn btn-outline-secondary" disabled>
-                                    <i class="bi bi-exclamation-circle me-1"></i> Límite alcanzado
-                                </button>
-                            {% endif %}
+            <!-- Sección de Watchdogs Desactivados -->
+            <section>
+                <div class="card shadow border-0 rounded-4 mb-5">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="feature bg-secondary bg-gradient text-white rounded-3 me-3">
+                                <i class="bi bi-bell-slash-fill"></i>
+                            </div>
+                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Watchdogs Desactivados</span></h3>
                         </div>
+
+                        {% if inactive_watchdogs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Activo</th>
+                                        <th>Cantidad</th>
+                                        <th>Moneda</th>
+                                        <th>Método</th>
+                                        <th>Fee</th>
+                                        <th>Fecha</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border-top-0">
+                                    {% for watchdog in inactive_watchdogs %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-{% if watchdog.side == 'buy' %}success{% else %}danger{% endif %} bg-opacity-10 text-{% if watchdog.side == 'buy' %}success{% else %}danger{% endif %} border border-{% if watchdog.side == 'buy' %}success{% else %}danger{% endif %} border-opacity-25 py-2 px-3">
+                                                <i class="bi bi-arrow-{% if watchdog.side == 'buy' %}up{% else %}down{% endif %}-circle me-1"></i>
+                                                {{ watchdog.get_side_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img class="crypto-icon me-2" src="{% static 'main/assets/' %}{{ watchdog.asset_code|lower }}.svg" width="32" height="32" alt="{{ watchdog.asset_code }}">
+                                                <span>{{ watchdog.asset_code }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ watchdog.amount }}</td>
+                                        <td>
+                                            <span class="fi fi-{{ watchdog.currency|lower }} fis me-2"></span>
+                                            {{ watchdog.currency }}
+                                        </td>
+                                        <td>
+                                          <i class="bi bi-credit-card me-1"></i>
+                                          {% if payment_methods_dict|get_item:watchdog.payment_method_id %}
+                                              {{ payment_methods_dict|get_item:watchdog.payment_method_id }}
+                                          {% else %}
+                                              {{ watchdog.payment_method_id }}
+                                          {% endif %}
+                                        </td>
+                                        <td>{{ watchdog.rate_fee }}%</td>
+                                        <td>{{ watchdog.created_at|date:"d/m/Y" }}</td>
+                                        <td class="text-end">
+                                            <div class="d-inline-flex">
+                                              <form method="post" action="{% url 'activate_watchdog' watchdog.pk %}" class="me-1">
+                                                  {% csrf_token %}
+                                                  <button type="submit" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Activar Watchdog">
+                                                      <i class="bi bi-bell"></i>
+                                                  </button>
+                                              </form>
+                                              <button type="button" class="btn btn-sm btn-outline-dark delete-watchdog-btn"
+                                                      data-bs-toggle="modal" data-bs-target="#deleteWatchdogModal"
+                                                      data-watchdog-id="{{ watchdog.pk }}"
+                                                      data-asset-name="{{ watchdog.asset_code }}"
+                                                      data-bs-placement="top" title="Eliminar Definitivamente">
+                                                  <i class="bi bi-trash"></i>
+                                              </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-secondary mb-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No tienes watchdogs desactivados
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </section>
         </div>
     </div>
 </div>
+<!-- Modal de confirmación para eliminar watchdogs -->
+<div class="modal fade" id="deleteWatchdogModal" tabindex="-1" aria-labelledby="deleteWatchdogModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 bg-danger bg-opacity-10">
+        <div class="d-flex align-items-center">
+          <div class="feature bg-danger text-white rounded-3 me-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <h5 class="fw-bolder mb-0" id="deleteWatchdogModalLabel">Confirmar eliminación</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="mb-0">¿Estás seguro de eliminar este watchdog? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-danger rounded-3" id="confirmDelete">
+          <i class="bi bi-trash me-1"></i> Eliminar definitivamente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% block page_js %}
+<script>
+    // Inicializar los tooltips de Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Manejar el modal de eliminación
+        const deleteModal = document.getElementById('deleteWatchdogModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                // Botón que activó el modal
+                const button = event.relatedTarget;
+                // Extraer información
+                const watchdogId = button.getAttribute('data-watchdog-id');
+                // Guardar el ID del watchdog en el botón de confirmación
+                const confirmButton = document.getElementById('confirmDelete');
+                confirmButton.setAttribute('data-watchdog-id', watchdogId);
+            });
+
+            // Manejar el clic en el botón de confirmación
+            document.getElementById('confirmDelete').addEventListener('click', function() {
+                const watchdogId = this.getAttribute('data-watchdog-id');
+                // Crear y enviar el formulario de eliminación
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/watchdog/${watchdogId}/delete/`;
+
+                // Añadir el CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = 'csrfmiddlewaretoken';
+                csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.appendChild(csrfToken);
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+    });
+</script>
+{% endblock page_js %}
 {% endblock content %}

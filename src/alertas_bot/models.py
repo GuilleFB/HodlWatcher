@@ -55,7 +55,7 @@ class InvestmentWatchdog(models.Model):
     currency = models.CharField(max_length=3, default="EUR")
     side = models.CharField(max_length=4, choices=SIDE_CHOICES, default="sell")
     rate_fee = models.DecimalField("Rate Fee (%)", max_digits=4, decimal_places=2, default=0)
-    payment_method_id = models.CharField(max_length=3, default="EUR")
+    payment_method_id = models.CharField(max_length=6, default="51")
     amount = models.PositiveIntegerField()
     asset_code = models.CharField(max_length=3, default="BTC")
     created_at = models.DateTimeField(auto_now_add=True)

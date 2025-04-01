@@ -47,7 +47,7 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'finder' %}">Finder</a></li>
                         {% if request.user.is_authenticated %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'create_watchdog' %}">Watchdog</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'create_watchdog' %}">Add Watchdog</a></li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
                             <li class="nav-item">
                                 <a class="btn btn-primary btn-lg px-3 py-2 me-sm-2 fs-6 fw-bolder" href="{% url 'account_logout' %}">
@@ -55,6 +55,7 @@
                                 </a>
                             </li>
                         {% else %}
+                            <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
                             <li class="nav-item me-2">
                                 <a class="btn btn-primary btn-lg px-3 py-2 fs-6 fw-bolder" href="{% url 'account_login' %}">

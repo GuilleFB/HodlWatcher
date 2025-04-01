@@ -205,11 +205,50 @@
                         </div>
 
                         <p class="text-danger">⚠️ Warning: This action cannot be undone!</p>
-                        <a href="{% url 'delete_account' %}" class="btn btn-danger">Delete Account</a>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            Delete Account
+                        </button>
                     </div>
                 </div>
             </section>
         </div>
     </div>
+</div>
+<!-- Modal de confirmación para eliminar cuenta -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 bg-danger bg-opacity-10">
+        <div class="d-flex align-items-center">
+          <div class="feature bg-danger text-white rounded-3 me-3">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+          </div>
+          <h5 class="fw-bolder mb-0" id="deleteAccountModalLabel">Eliminar cuenta</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Advertencia:</strong> Esta acción no se puede deshacer.
+        </div>
+        <p>Al eliminar tu cuenta:</p>
+        <ul>
+          <li>Se eliminarán todos tus watchdogs configurados</li>
+          <li>Perderás acceso a todo tu historial</li>
+          <li>Tu información será eliminada permanentemente</li>
+        </ul>
+        <p class="mb-0">¿Estás seguro de que deseas continuar?</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-1"></i> Cancelar
+        </button>
+        <a href="{% url 'delete_account' %}" class="btn btn-danger rounded-3">
+          <i class="bi bi-trash me-1"></i> Eliminar definitivamente
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock content %}

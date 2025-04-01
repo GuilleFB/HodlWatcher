@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, TemplateView, UpdateView, View
+from django.views.generic import DeleteView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import CreateView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -22,14 +22,6 @@ from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTe
 from .utils import extract_payment_methods
 
 logger = logging.getLogger(__name__)
-
-
-class ResumeView(TemplateView):
-    template_name = "resume.html"
-
-
-class ProjectsView(TemplateView):
-    template_name = "projects.html"
 
 
 class ContactView(CreateView):
@@ -333,8 +325,18 @@ class WatchdogListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["max_watchdogs"] = 5
+        # Añadir watchdogs inactivos
+        context["inactive_watchdogs"] = self.request.user.watchdogs.filter(active=False)
+        # Añadir contador y límite
         context["current_count"] = self.get_queryset().count()
+        context["max_watchdogs"] = 5
+
+        payment_methods = cache.get("payment_methods") or []
+
+        # Crear un diccionario para búsqueda rápida por ID
+        payment_methods_dict = {method["id"]: method["name"] for method in payment_methods}
+        context["payment_methods_dict"] = payment_methods_dict
+
         return context
 
 
@@ -409,28 +411,62 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class WatchdogDeactivateView(LoginRequiredMixin, View):
+class WatchdogActivateView(LoginRequiredMixin, View):
+    """
+    Vista para activar un watchdog desactivado
+    """
+
     def post(self, request, pk):
-        watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
-        watchdog.active = False
-        watchdog.save()
-        messages.success(request, "Watchdog desactivado correctamente")
+        try:
+            watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
+
+            # Verificar límite de watchdogs activos
+            user_plan = 5
+            active_count = request.user.watchdogs.filter(active=True).count()
+
+            if active_count >= user_plan:
+                messages.error(request, "Has alcanzado el límite de watchdogs activos para tu plan.")
+            else:
+                watchdog.active = True
+                watchdog.save()
+                messages.success(request, "Watchdog activado correctamente.")
+
+        except InvestmentWatchdog.DoesNotExist:
+            messages.error(request, "El watchdog no existe o no tienes permiso para activarlo.")
+
         return redirect("watchdogs_list")
 
 
-@login_required
-def delete_investment_watchdog(request):
-    try:
-        watchdog = get_object_or_404(InvestmentWatchdog, pk=pk)
-        watchdog.delete()
-        messages.success(request, "The watchdog was deleted")
+class WatchdogDeactivateView(LoginRequiredMixin, View):
+    """
+    Vista para desactivar un watchdog activo
+    """
 
-    except InvestmentWatchdog.DoesNotExist:
-        messages.error(request, "Watchdog doesnot exist")
-        return redirect("home")
+    def post(self, request, pk):
+        try:
+            watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
+            watchdog.active = False
+            watchdog.save()
+            messages.info(request, "Watchdog desactivado correctamente.")
 
-    except Exception as e:
-        messages.error(request, e.message)
-        return redirect("profile")
+        except InvestmentWatchdog.DoesNotExist:
+            messages.error(request, "El watchdog no existe o no tienes permiso para desactivarlo.")
 
-    return redirect("watchdogs_list")
+        return redirect("watchdogs_list")
+
+
+class DeleteWatchdogView(LoginRequiredMixin, DeleteView):
+    """
+    Vista para eliminar definitivamente un watchdog
+    """
+
+    model = InvestmentWatchdog
+    success_url = reverse_lazy("watchdogs_list")
+
+    def get_queryset(self):
+        # Solo permitir eliminar watchdogs del usuario autenticado que estén desactivados
+        return InvestmentWatchdog.objects.filter(user=self.request.user, active=False)
+
+    def form_valid(self, form):
+        messages.warning(self.request, "Watchdog eliminado definitivamente.")
+        return super().form_valid(form)
