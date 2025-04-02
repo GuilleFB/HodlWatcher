@@ -1,7 +1,7 @@
 import logging
 
 from asgiref.sync import sync_to_async  # Importar sync_to_async
-from bot.models import UsuarioTelegram
+from alertas_bot.models import UsuarioTelegram
 from constance import config
 from django.core.management.base import BaseCommand
 from telegram import Update

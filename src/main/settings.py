@@ -292,16 +292,16 @@ class Base(
     }
 
     # Email Yubin
-    EMAIL_BACKEND = opts.get("EMAIL_BACKEND", "")
-    MAILER_USE_BACKEND = opts.get("MAILER_USE_BACKEND", "")
-    DEFAULT_FROM_EMAIL = opts.get("DEFAULT_FROM_EMAIL", "")
+    EMAIL_BACKEND = opts.get("EMAIL_BACKEND")
+    MAILER_USE_BACKEND = opts.get("MAILER_USE_BACKEND")
+    DEFAULT_FROM_EMAIL = opts.get("DEFAULT_FROM_EMAIL")
 
     # Configuración para envío de correos
-    EMAIL_HOST = opts.get("EMAIL_HOST", "")
+    EMAIL_HOST = opts.get("EMAIL_HOST")
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = opts.get("EMAIL_HOST_USER", "")
-    EMAIL_HOST_PASSWORD = opts.get("EMAIL_HOST_PASSWORD", "")
+    EMAIL_HOST_USER = opts.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = opts.get("EMAIL_HOST_PASSWORD")
 
 
 class Test(Base):
