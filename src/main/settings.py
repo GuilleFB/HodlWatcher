@@ -40,7 +40,7 @@ class Base(
     USE_I18N = True
     USE_L10N = True
     USE_TZ = True
-    LANGUAGE_CODE = "es"
+    LANGUAGE_CODE = "en"
     TIME_ZONE = "Europe/Madrid"
 
     ROOT_URLCONF = "main.urls"
@@ -84,9 +84,9 @@ class Base(
         "health_check",
         "health_check.db",
         "health_check.cache",
-        # "health_check.contrib.celery",
-        # "health_check.storage",
-        # "health_check.contrib.s3boto3_storage",
+        "health_check.contrib.celery",
+        "health_check.storage",
+        "health_check.contrib.s3boto3_storage",
     ]
 
     INSTALLED_APPS += HEALTH_CHECK_APPS
@@ -282,7 +282,9 @@ class Base(
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://127.0.0.1:6379/1",  # Especifica el número de base de datos
+            "LOCATION": opts.get(
+                "CELERY_BROKER_URL", "redis://localhost:6379/1"
+            ),  # Especifica el número de base de datos
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
                 "CONNECTION_POOL_KWARGS": {"max_connections": 100},
@@ -290,6 +292,10 @@ class Base(
             "KEY_PREFIX": "hodlwatcher",  # Añade un prefijo opcional
         }
     }
+
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = True
+    AWS_S3_FILE_OVERWRITE = False
 
     # Email Yubin
     EMAIL_BACKEND = opts.get("EMAIL_BACKEND")

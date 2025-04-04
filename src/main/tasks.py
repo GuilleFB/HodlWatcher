@@ -34,6 +34,12 @@ def update_payment_methods():
 
 
 @shared_task
+def update_currencies():
+    view = BuscadorView()
+    view._cached_currecies()
+
+
+@shared_task
 def check_watchdogs():
     """
     Tarea que comprueba todos los InvestmentWatchdog activos y envía

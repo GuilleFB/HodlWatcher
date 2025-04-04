@@ -12,14 +12,15 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView, ListView, TemplateView, UpdateView, View
+from django.views.generic import DeleteView, ListView, TemplateView, UpdateView, View, FormView
 from django.views.generic.edit import CreateView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .forms import ConfiguracionForm, ContactForm, InvestmentWatchdogForm
-from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTelegram
-from .utils import extract_payment_methods
+from .forms import ConfiguracionForm, ContactForm, InvestmentWatchdogForm, LinkTelegramForm
+from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTelegram, WatchdogNotification
+from .utils import extract_payment_methods, extract_currencies, delete_file
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,14 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
             return configuracion
 
     def form_valid(self, form):
+        # Guardar referencia a la imagen actual antes de actualizar
+        old_instance = self.get_object()
+        old_image = None
+
+        if hasattr(old_instance, "image") and old_instance.image:
+            old_image = old_instance.image.name
+
+        # Continuar con la lógica original
         form.instance.user = self.request.user
 
         try:
@@ -71,13 +80,39 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         except UsuarioTelegram.DoesNotExist:
             pass
 
-        if self.object.image and form.cleaned_data["image"]:
-            self.object.image.delete()
+        # Guardar el formulario con la nueva imagen
+        response = super().form_valid(form)
 
-        return super().form_valid(form)
+        # Si hay una nueva imagen y existía una imagen antigua, eliminar la antigua
+        if old_image and hasattr(form.instance, "image"):
+            new_image = form.instance.image.name if form.instance.image else None
+
+            # Solo eliminar si la imagen ha cambiado
+            if old_image != new_image and old_image:
+                delete_file(old_image)
+
+        return response
 
     def get_context_data(self, **kwargs):
-        ret = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Obtener watchdogs del usuario utilizando select_related para cargar el usuario en una sola consulta
+        watchdogs = user.watchdogs.all()
+        context["watchdogs"] = watchdogs
+
+        # Usar directamente la relación inversa para filtrar notificaciones
+        # y usar prefetch_related solo una vez
+        context["historial_alertas"] = WatchdogNotification.objects.filter(watchdog__user=user).prefetch_related(
+            "watchdog"
+        )
+
+        # Intentar obtener configuración de Telegram
+        try:
+            context["configuracion"] = user.configuracion
+        except Configuracion.DoesNotExist:
+            context["configuracion"] = None
+
         authenticators = {}
         for auth in Authenticator.objects.filter(user=self.request.user):
             if auth.type == Authenticator.Type.WEBAUTHN:
@@ -85,10 +120,10 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
                 auths.append(auth.wrap())
             else:
                 authenticators[auth.type] = auth.wrap()
-        ret["authenticators"] = authenticators
-        ret["MFA_SUPPORTED_TYPES"] = app_settings.SUPPORTED_TYPES
-        ret["is_mfa_enabled"] = is_mfa_enabled(self.request.user)
-        return ret
+        context["authenticators"] = authenticators
+        context["MFA_SUPPORTED_TYPES"] = app_settings.SUPPORTED_TYPES
+        context["is_mfa_enabled"] = is_mfa_enabled(self.request.user)
+        return context
 
 
 class ConfiguracionUpdateView(LoginRequiredMixin, UpdateView):
@@ -149,7 +184,9 @@ class BuscadorView(TemplateView):
             total=3, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"]
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
-        session.headers.update({"User-Agent": "HodlWatcher/1.0 (+https://tudominio.com)", "Accept": "application/json"})
+        session.headers.update(
+            {"User-Agent": "HodlWatcher/1.0 (+https://hodlwatcher.com)", "Accept": "application/json"}
+        )
         return session
 
     def get_average_price(self, currency):
@@ -254,8 +291,21 @@ class BuscadorView(TemplateView):
             return cached_payment_methods
 
         paymet_methods = extract_payment_methods()
-        cache.set(cache_key, paymet_methods, 60 * 60 * 24 * 2)  # 2 día
+        cache.set(cache_key, paymet_methods, 60 * 60 * 24 * 31)  # 31 día
         return paymet_methods
+
+    def _cached_currecies(self):
+        """Obtiene las monedas de pago con cache"""
+        cache_key = "currencies"
+        cached_currencies = cache.get(cache_key)
+
+        if cached_currencies:
+            logging.info("Currencies retrieved from cache")
+            return cached_currencies
+
+        currencies = extract_currencies()
+        cache.set(cache_key, currencies, 60 * 60 * 24 * 31)  # 31 día
+        return currencies
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -266,10 +316,7 @@ class BuscadorView(TemplateView):
             {
                 "payment_methods": self._cached_payment_methods(),
                 "assets": [{"code": "BTC", "name": "Bitcoin"}],
-                "currencies": [
-                    {"code": "EUR", "name": "Euros"},
-                    {"code": "USD", "name": "American Dolar"},
-                ],
+                "currencies": self._cached_currecies(),
             }
         )
 
@@ -345,6 +392,24 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
     form_class = InvestmentWatchdogForm
     template_name = "watchdog_form.html"
     success_url = reverse_lazy("watchdogs_list")
+
+    def get_form_kwargs(self):
+        """Añadir el usuario_telegram a los kwargs del formulario."""
+        kwargs = super().get_form_kwargs()
+
+        # Buscar el usuario_telegram asociado al usuario actual
+        try:
+            configuracion = Configuracion.objects.get(user=self.request.user)
+            kwargs["usuario_telegram"] = configuracion.user_telegram
+        except Configuracion.DoesNotExist:
+            # Si no existe configuración, intentar buscar directamente el usuario_telegram
+            try:
+                usuario_telegram = UsuarioTelegram.objects.filter(username=self.request.user.username).first()
+                kwargs["usuario_telegram"] = usuario_telegram
+            except:
+                pass
+
+        return kwargs
 
     def get_initial(self):
         initial = super().get_initial()
@@ -470,3 +535,58 @@ class DeleteWatchdogView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         messages.warning(self.request, "Watchdog eliminado definitivamente.")
         return super().form_valid(form)
+
+
+# Vista para vincular cuenta de Telegram
+class LinkTelegramView(LoginRequiredMixin, FormView):
+    template_name = "link_telegram.html"
+    form_class = LinkTelegramForm
+    success_url = reverse_lazy("profile")
+
+    def form_valid(self, form):
+        username = form.cleaned_data["username"]
+
+        try:
+            # Buscar el usuario de Telegram por username
+            user_telegram = UsuarioTelegram.objects.get(username=username)
+
+            # Verificar si ya está vinculado a otro usuario
+            existing_config = Configuracion.objects.filter(user_telegram=user_telegram).first()
+            if existing_config and existing_config.user != self.request.user:
+                messages.error(self.request, "Este usuario de Telegram ya está vinculado a otra cuenta.")
+                return redirect("link_telegram")
+
+            # Actualizar la configuración del usuario
+            config, _ = Configuracion.objects.get_or_create(user=self.request.user)
+            config.user_telegram = user_telegram
+            config.save()
+
+            messages.success(self.request, "¡Cuenta de Telegram vinculada correctamente!")
+
+        except UsuarioTelegram.DoesNotExist:
+            messages.error(
+                self.request,
+                "No se encontró ningún usuario de Telegram con ese nombre. Por favor, asegúrate de haber iniciado nuestro bot con /start.",
+            )
+            return redirect("link_telegram")
+
+        return super().form_valid(form)
+
+
+class UnlinkTelegramView(LoginRequiredMixin, View):
+    """Vista para desvincular la cuenta de Telegram."""
+
+    def post(self, request, *args, **kwargs):
+        try:
+            configuracion = request.user.configuracion
+            if configuracion.user_telegram:
+                # Solo desvinculamos, no eliminamos el usuario de Telegram
+                configuracion.user_telegram = None
+                configuracion.save()
+                messages.success(request, "Tu cuenta de Telegram ha sido desvinculada correctamente.")
+            else:
+                messages.info(request, "No tenías ninguna cuenta de Telegram vinculada.")
+        except Configuracion.DoesNotExist:
+            messages.error(request, "No se encontró tu configuración.")
+
+        return redirect("profile")

@@ -24,7 +24,7 @@
 
                         <div class="row">
                             <div class="col-md-4 text-center">
-                                <img src="{{ object.image.url|default:"src/main/static/main/assets/profile.png" }}" alt="Profile" class="img-fluid rounded-circle" width="120">
+                              <img src="{{ object.image.url|default:'{% static "main/assets/profile.png" %}' }}" alt="Profile" class="img-fluid rounded-circle" width="120">
                             </div>
                             <div class="col-md-8">
                                 <p><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
@@ -41,6 +41,90 @@
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- Sección de Telegram -->
+            <section>
+              <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-body p-5">
+                  <div class="d-flex align-items-center mb-4">
+                      <div class="feature bg-primary text-white rounded-3 me-3">
+                        <i class="bi bi-telegram"></i>
+                      </div>
+                      <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Configuración de Telegram</span></h3>
+                  </div>
+                  <div class="card-body">
+                    {% if user.configuracion.user_telegram %}
+                      <p>
+                        <strong>Usuario:</strong> {{ user.configuracion.user_telegram.username }}
+                        <br>
+                        <strong>Estado de alertas de Watchdog:</strong>
+                        {% if user.configuracion.user_telegram.recibir_alertas_watchdog %}
+                          <span class="badge bg-success">Activadas</span>
+                        {% else %}
+                          <span class="badge bg-secondary">Desactivadas</span>
+                        {% endif %}
+                      </p>
+                      <p class="mb-0">
+                        <strong>📋 Comandos disponibles:</strong>
+                        <br>
+                        <code>/start</code> - Registrarse en el sistema
+                        <br>
+                        <code>/ratefee</code> - Consultar o modificar los rate fees configurados
+                        <br>
+                        <code>/watchdog on|off</code> - Activar o desactivar todas las alertas de watchdogs
+                        <br>
+                        <code>/miswatchdogs</code> - Lista tus watchdogs configurados
+                        <br>
+                        <code>/togglewatchdog [número]</code> - Activa/desactiva un watchdog específico
+                        <br>
+                        <code>/estado</code> - Ver el estado actual de tus alertas y rate fees
+                        <br>
+                        <code>/alerta</code> - Enviar una alerta con tus rate fees configurados
+                        <br>
+                        <code>/help</code> - Mostrar este mensaje de ayuda
+                      </p>
+                      <div class="text-center mt-3">
+                        <form method="POST" action="{% url 'unlink_telegram' %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger btn-sm">Desvincular Telegram</button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <p>No tienes conectado Telegram a tu cuenta.</p>
+                      <p>Para conectarlo:</p>
+                      <ol>
+                        <li>Busca nuestro bot en Telegram: <code>@HodlWatcher_bot</code></li>
+                        <li>Envía el comando <code>/start</code></li>
+                        <li>Ve a la página de enlace de cuenta</li>
+                      </ol>
+                      <a href="{% url 'link_telegram' %}" class="btn btn-primary">Vincular cuenta</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Alertas telegram -->
+            <section>
+              <div class="card shadow border-0 rounded-4 mb-5">
+                <div class="card-body p-5">
+                  <div class="d-flex align-items-center mb-4">
+                    <div class="feature bg-primary text-white rounded-3 me-3">
+                      <i class="bi bi-exclamation-octagon"></i>
+                    </div>
+                    <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Historial de Alertas</span></h3>
+                  </div>
+                  <div class="card-body">
+                    <!-- Aquí puedes listar el historial de alertas recibidas -->
+                    {% if historial_alertas %}
+                      {{historial_alertas}}
+                    {% else %}
+                      <p class="text-center">No hay historial de alertas.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
             </section>
 
             <!-- Sección de Cambio de Contraseña -->

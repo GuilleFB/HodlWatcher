@@ -13,7 +13,7 @@ COPY system-dev-requirements.txt ./system-dev-requirements.txt
 
 RUN <<EOF
     apt-get -qq update
-    xargs apt-get -qq install -y < system-requirements.txt
+    xargs apt-get -qq install -y gosu gettext < system-requirements.txt
     if [ ${APP_ENV} = "devel" ]; then
         xargs apt-get -qq install -y < system-dev-requirements.txt
     fi
@@ -21,6 +21,7 @@ RUN <<EOF
 EOF
 
 # pipenv
+RUN pip install pipenv=="2024.4.1"
 COPY Pipfile* ./
 RUN [ -f Pipfile.lock ] && pipenv install "$(test $APP_ENV = devel && echo "--dev")" --system --deploy
 # end pipenv

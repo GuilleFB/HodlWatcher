@@ -29,7 +29,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="asset_code" class="form-label">Cripto</label>
-                    <select class="form-select" id="asset_code" name="asset_code">
+                    <select class="form-select" id="asset_code" name="asset_code" disabled>
                         {% for asset in assets %}
                         <option value="{{ asset.code }}" {% if form_data.asset_code == asset.code %}selected{% endif %}>
                             {{ asset.name }} ({{ asset.code }})
@@ -38,6 +38,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label for="amount" class="form-label">Monto</label>
+                    <input type="number" class="form-control" id="amount" name="amount" value="{{ form_data.amount }}">
+                </div>
+                                <div class="col-md-3">
                     <label for="currency_code" class="form-label">Moneda</label>
                     <select class="form-select" id="currency_code" name="currency_code">
                         {% for currency in currencies %}
@@ -46,10 +50,6 @@
                         </option>
                         {% endfor %}
                     </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="amount" class="form-label">Monto</label>
-                    <input type="number" class="form-control" id="amount" name="amount" value="{{ form_data.amount }}">
                 </div>
                 <div class="col-md-6">
                     <label for="payment_method_id" class="form-label">Método de Pago</label>

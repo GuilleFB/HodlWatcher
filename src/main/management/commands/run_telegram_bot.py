@@ -1,18 +1,14 @@
 import logging
-
-from asgiref.sync import sync_to_async  # Importar sync_to_async
-from alertas_bot.models import UsuarioTelegram
+from asgiref.sync import sync_to_async
 from constance import config
 from django.core.management.base import BaseCommand
 from telegram import Update
 from telegram.ext import Application, CallbackContext, CommandHandler
-
-# Importa tus modelos
-from alertas_bot.models import Configuracion
+from alertas_bot.models import Configuracion, InvestmentWatchdog, UsuarioTelegram
 
 
 class Command(BaseCommand):
-    help = "Inicia el bot de Telegram para monitoreo de rate_fee"
+    help = "Inicia el bot de Telegram para monitoreo de inversiones"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -37,37 +33,128 @@ class Command(BaseCommand):
         if options["debug"]:
             self.stdout.write(self.style.WARNING("Ejecutando en modo DEBUG"))
 
-        # Definir funciones síncronas que serán convertidas a asíncronas
+        # Definir funciones síncronas para interacción con la BD
+
         def get_or_create_user(chat_id, username):
-            """Versión síncrona para crear o obtener un usuario"""
+            """Obtiene o crea un usuario de Telegram."""
             return UsuarioTelegram.objects.get_or_create(chat_id=chat_id, defaults={"username": username})
 
-        def get_configuracion():
-            """Versión síncrona para obtener la configuración"""
-            return Configuracion.objects.first()
+        def get_user_by_username(username):
+            """Obtiene un usuario de Telegram por su username."""
+            try:
+                return UsuarioTelegram.objects.get(username=username)
+            except UsuarioTelegram.DoesNotExist:
+                return None
 
-        def update_rate_fee(username, ratefee: float) -> bool:
-            """Versión síncrona para actualizar el rate_fee en la base de datos."""
-            user = UsuarioTelegram.objects.get(username=username)
-            if user and int(user.rate_fee) != ratefee:
-                user.rate_fee = ratefee
-                user.save()
+        def get_usuario_by_chat_id(chat_id):
+            """Obtiene un usuario de Telegram por su chat_id."""
+            try:
+                return UsuarioTelegram.objects.get(chat_id=chat_id)
+            except UsuarioTelegram.DoesNotExist:
+                return None
+
+        def get_user_watchdogs(chat_id):
+            """Obtiene los watchdogs asociados al usuario de Telegram."""
+            usuario = get_usuario_by_chat_id(chat_id)
+            logger.info(f"get_user_watchdogs: usuario encontrado={usuario is not None}")
+
+            if not usuario:
+                return []
+
+            # Verificar si el modelo InvestmentWatchdog tiene relación directa con UsuarioTelegram
+            has_direct_relation = hasattr(InvestmentWatchdog, "usuario_telegram")
+            logger.info(f"get_user_watchdogs: relación directa={has_direct_relation}")
+
+            if has_direct_relation:
+                # Usar la relación directa si existe
+                watchdogs = InvestmentWatchdog.objects.filter(usuario_telegram=usuario)
+            else:
+                # Buscar a través de la configuración si no hay relación directa
+                config = Configuracion.objects.filter(user_telegram=usuario).first()
+                logger.info(f"get_user_watchdogs: configuración encontrada={config is not None}")
+                if config:
+                    watchdogs = InvestmentWatchdog.objects.filter(user=config.user)
+                else:
+                    watchdogs = []
+
+            logger.info(f"get_user_watchdogs: watchdogs encontrados={len(watchdogs)}")
+            return watchdogs
+
+        def create_or_update_watchdog(chat_id, rate_fee: float, **kwargs) -> bool:
+            """Crea o actualiza un watchdog con el rate_fee especificado."""
+            usuario = get_usuario_by_chat_id(chat_id)
+            if not usuario:
+                return False
+
+            # Actualizar también el rate_fee base del usuario como referencia
+            usuario.rate_fee = rate_fee
+            usuario.save()
+
+            # Si hay watchdogs existentes, crear o actualizar según el caso
+            watchdogs = get_user_watchdogs(chat_id)
+
+            # Si no hay kwargs específicos, crear o actualizar un watchdog predeterminado
+            # usando valores por defecto del modelo
+            if not kwargs and not watchdogs.exists():
+                # Obtener usuario Django a través de la configuración
+                config = Configuracion.objects.filter(user_telegram=usuario).first()
+                if not config:
+                    return False
+
+                # Crear un watchdog predeterminado
+                InvestmentWatchdog.objects.create(
+                    user=config.user,
+                    rate_fee=rate_fee,
+                    usuario_telegram=usuario,
+                    amount=100,  # Valor predeterminado
+                )
                 return True
+            elif kwargs:
+                # Crear/actualizar watchdog con parámetros específicos
+                # Implementación depende de requisitos específicos
+                pass
+            elif watchdogs.exists():
+                # Actualizar todos los watchdogs existentes
+                watchdogs.update(rate_fee=rate_fee)
+                return True
+
             return False
 
-        # Convertir las funciones síncronas a asíncronas
-        get_or_create_user_async = sync_to_async(get_or_create_user)
-        get_configuracion_async = sync_to_async(get_configuracion)
-        update_rate_fee_async = sync_to_async(update_rate_fee)
+        def toggle_alertas_watchdog(chat_id, estado: bool) -> bool:
+            """Activa/desactiva alertas de watchdog para un usuario."""
+            try:
+                usuario = UsuarioTelegram.objects.get(chat_id=chat_id)
+                usuario.recibir_alertas_watchdog = estado
+                usuario.save()
+                return True
+            except UsuarioTelegram.DoesNotExist:
+                return False
 
-        # Definir los manejadores de comandos
+        def toggle_watchdog_by_index(chat_id, idx):
+            """Cambia el estado de un watchdog específico."""
+            watchdogs = list(get_user_watchdogs(chat_id))
+            if 0 <= idx < len(watchdogs):
+                watchdog = watchdogs[idx]
+                watchdog.active = not watchdog.active  # Usar 'active' según el modelo
+                watchdog.save()
+                return watchdog
+            return None
+
+        # Convertir funciones síncronas a asíncronas
+        get_or_create_user_async = sync_to_async(get_or_create_user)
+        get_usuario_by_chat_id_async = sync_to_async(get_usuario_by_chat_id)
+        create_or_update_watchdog_async = sync_to_async(create_or_update_watchdog)
+        toggle_alertas_watchdog_async = sync_to_async(toggle_alertas_watchdog)
+        get_user_watchdogs_async = sync_to_async(get_user_watchdogs)
+        toggle_watchdog_by_index_async = sync_to_async(toggle_watchdog_by_index)
+
+        # Definir manejadores de comandos
         async def start(update: Update, context: CallbackContext) -> None:
             """Comando /start: Registra al usuario en la base de datos."""
             chat_id = update.effective_chat.id
             username = update.effective_user.username or "Usuario desconocido"
 
             try:
-                # Usar la versión asíncrona de get_or_create
                 _, created = await get_or_create_user_async(chat_id, username)
 
                 if created:
@@ -83,65 +170,228 @@ class Command(BaseCommand):
                 await update.message.reply_text("❌ Error al procesar tu solicitud. Por favor, intenta de nuevo.")
 
         async def modificar_rate_fee(update: Update, context: CallbackContext) -> None:
-            """Comando /ratefee: Modifica el rate_fee actual según el valor proporcionado por el usuario."""
+            """Comando /ratefee: Crea o actualiza watchdogs con el rate_fee especificado."""
+            chat_id = update.effective_chat.id
             username = update.effective_user.username or "Usuario desconocido"
 
-            # Verificar si el usuario proporcionó un argumento (nuevo rate_fee)
             if not context.args:
-                await update.message.reply_text(
-                    "❌ Debes proporcionar un nuevo valor para el rate_fee. Ejemplo: /ratefee 5"
-                )
+                # Si no hay argumentos, mostrar los rate_fee actuales
+                watchdogs = await get_user_watchdogs_async(chat_id)
+                if watchdogs:
+                    mensaje = "📊 *Rate Fees actuales:*\n\n"
+                    for i, watchdog in enumerate(watchdogs, 1):
+                        mensaje += f"{i}. {float(watchdog.rate_fee)}%\n"
+                    await update.message.reply_text(mensaje, parse_mode="Markdown")
+                else:
+                    await update.message.reply_text(
+                        "❌ No tienes rate_fees configurados. Usa /ratefee [valor] para configurar uno."
+                    )
                 return
 
             try:
-                # Intentar convertir el argumento a número
                 nuevo_rate_fee = float(context.args[0])
                 if nuevo_rate_fee < 0:
                     await update.message.reply_text("❌ El rate_fee no puede ser un valor negativo.")
                     return
 
-                # Actualizar rate_fee de manera asíncrona
-                actualizado = await update_rate_fee_async(username, nuevo_rate_fee)
+                actualizado = await create_or_update_watchdog_async(chat_id, nuevo_rate_fee)
                 if actualizado:
                     logger.info(f"Usuario {username} modificó el rate_fee a {nuevo_rate_fee}%")
                     await update.message.reply_text(f"✅ El rate_fee ha sido actualizado a {nuevo_rate_fee}%.")
                 else:
-                    await update.message.reply_text("❌ No se pudo actualizar el rate fee.")
+                    await update.message.reply_text(
+                        "❌ No se pudo actualizar el rate fee. Verifica que estés registrado."
+                    )
 
             except ValueError:
                 await update.message.reply_text("❌ Debes proporcionar un número válido. Ejemplo: /ratefee 5")
-
             except Exception as e:
                 logger.error(f"Error al modificar el rate_fee: {e}", exc_info=True)
                 await update.message.reply_text("❌ Ocurrió un error al modificar el rate_fee.")
 
         async def alerta(update: Update, context: CallbackContext) -> None:
-            """Comando /alerta: Envía una alerta con el rate_fee."""
+            """Comando /alerta: Envía una alerta con los rate_fee configurados."""
+            chat_id = update.effective_chat.id
             username = update.effective_user.username or "Usuario desconocido"
             logger.info(f"Usuario {username} solicitó una alerta")
 
             try:
-                # Usar la versión asíncrona para obtener la configuración
-                config = await get_configuracion_async()
-                if config:
-                    message = f"🚨 ALERTA: El rate_fee actual es {config.user.rate_fee}% 🚨"
-                    await update.message.reply_text(message)
+                watchdogs = await get_user_watchdogs_async(chat_id)
+
+                if watchdogs:
+                    mensaje = "🚨 *ALERTA DE RATE FEES:*\n\n"
+
+                    for i, watchdog in enumerate(watchdogs, 1):
+                        mensaje += (
+                            f"{i}. *Watchdog {watchdog.id}*\n"
+                            f"   Moneda: {watchdog.currency} - {watchdog.asset_code}\n"
+                            f"   Rate Fee: {float(watchdog.rate_fee)}%\n"
+                            f"   Estado: {'Activo' if watchdog.active else 'Inactivo'}\n\n"
+                        )
+
+                    await update.message.reply_text(mensaje, parse_mode="Markdown")
                 else:
-                    await update.message.reply_text("❌ No hay rate_fee configurado.")
+                    # Si no hay watchdogs, mostrar el rate_fee base del usuario
+                    usuario = await get_usuario_by_chat_id_async(chat_id)
+                    if usuario:
+                        mensaje = (
+                            f"🚨 ALERTA: Tu rate_fee base es {usuario.rate_fee}%. No tienes watchdogs configurados. 🚨"
+                        )
+                        await update.message.reply_text(mensaje)
+                    else:
+                        await update.message.reply_text("❌ No hay rate_fees configurados. Usa /start primero.")
             except Exception as e:
                 logger.error(f"Error en comando alerta: {e}", exc_info=True)
                 await update.message.reply_text("❌ Error al generar la alerta.")
+
+        async def toggle_watchdog(update: Update, context: CallbackContext) -> None:
+            """Comando /watchdog: Activa o desactiva las notificaciones de watchdog."""
+            chat_id = update.effective_chat.id
+            username = update.effective_user.username or "Usuario desconocido"
+
+            if not context.args or context.args[0].lower() not in ["on", "off"]:
+                await update.message.reply_text(
+                    "❌ Debes especificar si quieres activar o desactivar las alertas: /watchdog on o /watchdog off"
+                )
+                return
+
+            estado = context.args[0].lower() == "on"
+
+            try:
+                actualizado = await toggle_alertas_watchdog_async(chat_id, estado)
+                if actualizado:
+                    estado_texto = "activadas" if estado else "desactivadas"
+                    logger.info(f"Usuario {username} {estado_texto} las alertas de watchdog")
+                    await update.message.reply_text(f"✅ Las alertas de watchdog han sido {estado_texto}.")
+                else:
+                    await update.message.reply_text("❌ No se encontró tu usuario. Por favor, usa /start primero.")
+            except Exception as e:
+                logger.error(f"Error al cambiar estado de alertas: {e}", exc_info=True)
+                await update.message.reply_text("❌ Ocurrió un error al cambiar el estado de las alertas.")
+
+        async def estado_watchdog(update: Update, context: CallbackContext) -> None:
+            """Comando /estado: Muestra el estado actual de las notificaciones."""
+            chat_id = update.effective_chat.id
+
+            try:
+                usuario = await get_usuario_by_chat_id_async(chat_id)
+                if usuario:
+                    estado = "activadas" if usuario.recibir_alertas_watchdog else "desactivadas"
+
+                    # Obtener los watchdogs para mostrar sus rate_fees
+                    watchdogs = await get_user_watchdogs_async(chat_id)
+
+                    mensaje = (
+                        f"📊 *Estado actual*\n"
+                        f"- Alertas de watchdog: {estado}\n"
+                        f"- Rate Fee base: {usuario.rate_fee}%\n"
+                    )
+
+                    if watchdogs:
+                        mensaje += "\n*Watchdogs configurados:*\n"
+                        for i, watchdog in enumerate(watchdogs, 1):
+                            mensaje += (
+                                f"{i}. {watchdog.currency}-{watchdog.asset_code}: "
+                                f"{float(watchdog.rate_fee)}% "
+                                f"({'Activo' if watchdog.active else 'Inactivo'})\n"
+                            )
+
+                    await update.message.reply_text(mensaje, parse_mode="Markdown")
+                else:
+                    await update.message.reply_text("❌ No se encontró tu usuario. Por favor, usa /start primero.")
+            except Exception as e:
+                logger.error(f"Error al obtener estado: {e}", exc_info=True)
+                await update.message.reply_text("❌ Ocurrió un error al obtener el estado.")
+
+        async def listar_watchdogs(update: Update, context: CallbackContext) -> None:
+            """Comando /miswatchdogs: Lista los watchdogs configurados por el usuario."""
+            chat_id = update.effective_chat.id
+            logger.info(f"Solicitando watchdogs para chat_id: {chat_id}")
+
+            try:
+                usuario = await get_usuario_by_chat_id_async(chat_id)
+                logger.info(f"Usuario encontrado: {usuario is not None}")
+
+                watchdogs = await get_user_watchdogs_async(chat_id)
+                logger.info(f"Watchdogs encontrados: {len(watchdogs) if watchdogs else 0}")
+
+                if watchdogs:
+                    mensaje = "🔍 *Tus Investment Watchdogs:*\n\n"
+
+                    for i, watchdog in enumerate(watchdogs, 1):
+                        estado = "✅ Activo" if watchdog.active else "❌ Inactivo"  # Usar 'active' según el modelo
+
+                        # Adaptar a los campos del modelo real
+                        mensaje += (
+                            f"{i}. *Watchdog {watchdog.id}*\n"
+                            f"   Moneda: {watchdog.currency} - {watchdog.asset_code}\n"
+                            f"   Tipo: {watchdog.side}\n"
+                            f"   Rate Fee: {float(watchdog.rate_fee)}%\n"
+                            f"   Monto: {watchdog.amount}\n"
+                            f"   Estado: {estado}\n\n"
+                        )
+
+                    await update.message.reply_text(mensaje, parse_mode="Markdown")
+                else:
+                    await update.message.reply_text(
+                        "❌ No tienes watchdogs configurados o tu cuenta no está vinculada."
+                    )
+
+            except Exception as e:
+                logger.error(f"Error al listar watchdogs: {e}", exc_info=True)
+                await update.message.reply_text("❌ Ocurrió un error al obtener tus watchdogs.")
+
+        async def toggle_watchdog_estado(update: Update, context: CallbackContext) -> None:
+            """Comando /togglewatchdog: Activa o desactiva un watchdog específico."""
+            chat_id = update.effective_chat.id
+
+            if not context.args:
+                await update.message.reply_text(
+                    "❌ Debes proporcionar el número del watchdog que quieres activar/desactivar. "
+                    "Usa /miswatchdogs para ver la lista numerada."
+                )
+                return
+
+            try:
+                idx = int(context.args[0]) - 1
+                watchdog = await toggle_watchdog_by_index_async(chat_id, idx)
+
+                if watchdog:
+                    estado = "activado" if watchdog.active else "desactivado"  # Usar 'active' según el modelo
+                    await update.message.reply_text(f"✅ El watchdog #{idx+1} ha sido {estado}.", parse_mode="Markdown")
+                else:
+                    await update.message.reply_text(
+                        "❌ Número de watchdog inválido. Usa /miswatchdogs para ver la lista numerada."
+                    )
+
+            except ValueError:
+                await update.message.reply_text("❌ Debes proporcionar un número válido.")
+            except Exception as e:
+                logger.error(f"Error al cambiar estado de watchdog: {e}", exc_info=True)
+                await update.message.reply_text("❌ Ocurrió un error al cambiar el estado del watchdog.")
 
         async def help_command(update: Update, context: CallbackContext) -> None:
             """Comando /help: Muestra la ayuda del bot."""
             help_text = (
                 "📋 *Comandos disponibles:*\n\n"
                 "/start - Registrarse en el sistema\n"
-                "/ratefee - Consultar el rate fee actual\n"
-                "/alerta - Enviar una alerta con el rate fee actual\n"
+                "/ratefee - Consultar o modificar los rate fees configurados\n"
+                "/watchdog on|off - Activar o desactivar todas las alertas de watchdogs\n"
+                "/miswatchdogs - Lista tus watchdogs configurados\n"
+                "/togglewatchdog [número] - Activa/desactiva un watchdog específico\n"
+                "/estado - Ver el estado actual de tus alertas y rate fees\n"
+                "/alerta - Enviar una alerta con tus rate fees configurados\n"
                 "/help - Mostrar este mensaje de ayuda"
             )
             await update.message.reply_text(help_text, parse_mode="Markdown")
+
+        # Manejador de errores
+        async def error_handler(update, context):
+            logger.error(f"Error manejando la actualización {update}: {context.error}", exc_info=True)
+            if update and update.effective_message:
+                await update.effective_message.reply_text(
+                    "❌ Ocurrió un error al procesar tu solicitud. Intenta nuevamente."
+                )
 
         # Inicializar la aplicación
         try:
@@ -152,15 +402,12 @@ class Command(BaseCommand):
             app.add_handler(CommandHandler("ratefee", modificar_rate_fee))
             app.add_handler(CommandHandler("alerta", alerta))
             app.add_handler(CommandHandler("help", help_command))
+            app.add_handler(CommandHandler("watchdog", toggle_watchdog))
+            app.add_handler(CommandHandler("estado", estado_watchdog))
+            app.add_handler(CommandHandler("miswatchdogs", listar_watchdogs))
+            app.add_handler(CommandHandler("togglewatchdog", toggle_watchdog_estado))
 
             # Configurar manejador de errores
-            async def error_handler(update, context):
-                logger.error(f"Error manejando la actualización {update}: {context.error}", exc_info=True)
-                if update and update.effective_message:
-                    await update.effective_message.reply_text(
-                        "Ocurrió un error al procesar tu solicitud. Intenta nuevamente."
-                    )
-
             app.add_error_handler(error_handler)
 
             self.stdout.write(self.style.SUCCESS("✅ Bot de Telegram iniciado correctamente"))

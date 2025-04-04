@@ -25,9 +25,13 @@ app.conf.beat_schedule = {
         "task": "main.tasks.update_price_cache",
         "schedule": 60 * 5,  # 5 minutos
     },
-    "update-payment_methods-every-1-day": {
+    "update-payment_methods-every-month": {
         "task": "main.tasks.update_payment_methods",
-        "schedule": crontab(hour=4, minute=0),  # A las 4 AM cada día
+        "schedule": crontab(hour=4, minute=0, day_of_month=14),  # A las 4 AM cada día 14 del mes
+    },
+    "update-currencies-every-month": {
+        "task": "main.tasks.update_currencies",
+        "schedule": crontab(hour=4, minute=0, day_of_month=14),  # A las 4 AM cada día 14 del mes
     },
     "check-watchdogs-every-10-minutes": {
         "task": "main.tasks.check_watchdogs",

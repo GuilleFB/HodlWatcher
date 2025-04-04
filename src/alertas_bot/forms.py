@@ -41,50 +41,57 @@ class ConfiguracionForm(forms.ModelForm):
 
 class InvestmentWatchdogForm(forms.ModelForm):
     # Definir los campos explícitamente para poder asignarles choices
-    currency = forms.ChoiceField(label="Moneda", widget=forms.Select(attrs={"class": "form-select"}))
+    currency = forms.ChoiceField(label="Currency", widget=forms.Select(attrs={"class": "form-select"}))
 
-    payment_method_id = forms.ChoiceField(label="Método de pago", widget=forms.Select(attrs={"class": "form-select"}))
+    payment_method_id = forms.ChoiceField(
+        label="Method of payment", widget=forms.Select(attrs={"class": "form-select"})
+    )
 
-    asset_code = forms.ChoiceField(label="Activo", widget=forms.Select(attrs={"class": "form-select"}))
+    asset_code = forms.ChoiceField(label="Asset", widget=forms.Select(attrs={"class": "form-select"}))
 
     def __init__(self, *args, **kwargs):
+        # Extraer el usuario_telegram del kwargs (si existe)
+        self.usuario_telegram = kwargs.pop("usuario_telegram", None)
+
         super().__init__(*args, **kwargs)
 
-        # Obtener payment_methods de la caché
-        cache_key = "payment_methods"
-        cached_payment_methods = cache.get(cache_key) or []
+        # Get payment_methods and currencies from cache
+        cache_key_payment_methods = "payment_methods"
+        cached_payment_methods = cache.get(cache_key_payment_methods) or []
 
-        # Crear las opciones para payment_method_id
+        cache_key_currencies = "currencies"
+        cached_currencies = cache.get(cache_key_currencies) or []
+
+        # Create options for payment_method_id
         payment_method_choices = [
             (method["id"], f"{method['name']} ({method['type']})") for method in cached_payment_methods
         ]
         self.fields["payment_method_id"].choices = payment_method_choices
 
-        # Definir currencies
-        currency_choices = [
-            ("EUR", "Euros"),
-            ("USD", "American Dolar"),
-        ]
+        # Create options for currencies
+        currency_choices = [(method["code"], f"{method['name']}") for method in cached_currencies]
+
         self.fields["currency"].choices = currency_choices
 
-        # Definir assets
+        # Defining assets
         asset_choices = [
             ("BTC", "Bitcoin"),
         ]
         self.fields["asset_code"].choices = asset_choices
+        self.fields["asset_code"].disabled = True
 
     class Meta:
         model = InvestmentWatchdog
-        fields = ["side", "asset_code", "currency", "payment_method_id", "amount", "rate_fee"]
+        fields = ["side", "asset_code", "payment_method_id", "amount", "currency", "rate_fee"]
         widgets = {
             "side": forms.Select(attrs={"class": "form-select"}),
             "amount": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Introduce la cantidad"}),
             "rate_fee": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "0.00"}),
         }
         labels = {
-            "side": "Tipo de operación",
-            "amount": "Cantidad",
-            "rate_fee": "Tasa de fee (%)",
+            "side": "Type of operation",
+            "amount": "Quantity",
+            "rate_fee": "Fee rate (%)",
         }
 
     def clean(self):
@@ -93,7 +100,29 @@ class InvestmentWatchdogForm(forms.ModelForm):
 
         if user and user.watchdogs.filter(active=True).count() >= 5:
             raise ValidationError(
-                "Ya tienes el máximo de 5 watchdogs activos. Por favor desactiva uno antes de crear otro."
+                "You already have the maximum of 5 active watchdogs. Please deactivate one before creating another."
             )
 
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # Asignar el usuario_telegram si está disponible
+        if self.usuario_telegram:
+            instance.usuario_telegram = self.usuario_telegram
+
+        if commit:
+            instance.save()
+
+        return instance
+
+
+# Formulario para vincular cuenta de Telegram
+class LinkTelegramForm(forms.Form):
+    username = forms.CharField(
+        max_length=255,
+        required=True,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        help_text="Enter your Telegram user name without the initial @",
+    )

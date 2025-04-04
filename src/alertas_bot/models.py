@@ -8,6 +8,11 @@ from django.db import models
 class UsuarioTelegram(models.Model):
     chat_id = models.BigIntegerField(unique=True)
     username = models.CharField(max_length=255, blank=True)
+    recibir_alertas_watchdog = models.BooleanField(default=False)
+    rate_fee = models.FloatField(default=0.0)
+
+    # Puedes añadir una relación inversa a InvestmentWatchdog si lo deseas
+    # Esto permite acceder directamente a los watchdogs desde el usuario de Telegram
 
     def __str__(self):
         return self.username or f"ID: {self.chat_id}"
@@ -38,7 +43,7 @@ class ContactMessage(models.Model):
 class Configuracion(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_telegram = models.OneToOneField(UsuarioTelegram, on_delete=models.SET_NULL, null=True, blank=True)
-    image = models.ImageField(upload_to="profile_pics/", default="default.jpg")
+    image = models.ImageField(upload_to="profile_pics/", default="profile.png")
 
     def __str__(self):
         return f"Config for {self.user.username}"
@@ -60,6 +65,9 @@ class InvestmentWatchdog(models.Model):
     asset_code = models.CharField(max_length=3, default="BTC")
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
+    usuario_telegram = models.ForeignKey(
+        UsuarioTelegram, on_delete=models.SET_NULL, null=True, blank=True, related_name="watchdogs"
+    )
 
     def __str__(self):
         return f"Watchdog de {self.user.email} - {self.currency}"

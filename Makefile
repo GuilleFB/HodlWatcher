@@ -1,7 +1,12 @@
 .PHONY: all
-all: devel
+all: proyect
 
 UID_GID_BUILD_ARGS := --build-arg UID=`id -u` --build-arg GID=`id -g`
+
+.PHONY: proyect
+proyect:
+	docker compose build ${UID_GID_BUILD_ARGS} proyect
+	docker compose run --service-ports --rm proyect; docker compose down
 
 .PHONY: devel
 devel:
@@ -33,7 +38,7 @@ create_bucket:
 .PHONY: celery
 celery:
 	docker compose build ${UID_GID_BUILD_ARGS} celery celery-beat flower
-	docker compose up celery celery-beat flower
+	docker compose up -d celery celery-beat flower
 
 .PHONY: logs
 logs:
@@ -57,7 +62,7 @@ deps:
 
 .PHONY: bash
 bash:
-	docker exec -it `docker ps -qf "name=^HodlWatcher_(devel|debug)_run_"` bash
+	docker exec -it `docker ps -qf "name=^hodlwatcher-(proyect|devel|debug)-run-"` bash
 
 .PHONY: trivy
 trivy:

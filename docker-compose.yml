@@ -7,6 +7,16 @@ services:
     ports:
       - "8080:8080"
 
+  .base_app: &base_app
+    build:
+      context: .
+      args:
+        APP_ENV: devel
+    volumes:
+      - ./src/:/app
+    env_file: env-devel
+    tty: true
+
   uwsgi:
     <<: *backend
     depends_on:
@@ -52,7 +62,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   minio:
-    image: minio/minio:RELEASE.2023-05-04T21-44-30Z
+    image: minio/minio:RELEASE.2025-02-28T09-55-16Z
     command: 'minio server --console-address ":9001"'
     ports:
       - "9001:9001"
@@ -62,7 +72,7 @@ services:
     env_file: env-devel
 
   create_bucket:
-    image: minio/mc:RELEASE.2023-05-04T18-10-16Z
+    image: minio/mc:RELEASE.2025-02-21T16-00-46Z
     depends_on:
       - minio
     env_file: env-devel
@@ -72,40 +82,68 @@ services:
       mc mb --ignore-existing myminio/$${AWS_STORAGE_BUCKET_NAME};
       exit 0;
       "
-
-  devel: &devel
-    build:
-      context: .
-      args:
-          APP_ENV: devel
+  prometheus:
+    image: prom/prometheus
+    depends_on:
+      - celery
+      - celery-beat
+      - flower
+    ports:
+      - "9090:9090"
     volumes:
-      - ./src/:/app
+      - /home/gfollana/Workspace/HodlWatcher/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  proyect:
+    <<: *base_app
     environment:
       ENABLE_BASIC_AUTH: "False"
-    env_file: env-devel
     depends_on:
       - postgres
       - redis
       - minio
-    tty: true
+      - celery
+      - celery-beat
+      # - prometheus
+      # - grafana
+    command: run-devel
+    ports:
+      - "8000:8000"
+
+  devel:
+    <<: *base_app
+    environment:
+      ENABLE_BASIC_AUTH: "False"
+    depends_on:
+      - postgres
+      - redis
+      - minio
     command: run-devel
     ports:
       - "8000:8000"
 
   debug:
-    <<: *devel
+    <<: *base_app
     command: run-debug
     ports:
       - "8000:8000"
       - "5678:5678"
 
   celery:
-    <<: *devel
+    <<: *base_app
     command: run-celery
     ports: []
 
   celery-beat:
-    <<: *devel
+    <<: *base_app
     command: run-celery-beat
     ports: []
     depends_on:
@@ -113,7 +151,7 @@ services:
       - redis
 
   flower:
-    <<: *devel
+    <<: *base_app
     command: run-flower
     depends_on:
       - redis
@@ -154,3 +192,4 @@ volumes:
   postgres:
   postgres-data:
   minio-data:
+  grafana-storage:
