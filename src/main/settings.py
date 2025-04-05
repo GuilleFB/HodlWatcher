@@ -271,8 +271,8 @@ class Base(
     SESSION_COOKIE_SECURE = True
 
     # Invisible v3 reCAPTCHA
-    RECAPTCHA_PUBLIC_KEY = opts.get("RECAPTCHA_PUBLIC_KEY")
-    RECAPTCHA_PRIVATE_KEY = opts.get("RECAPTCHA_PRIVATE_KEY")
+    RECAPTCHA_PUBLIC_KEY = opts.get("RECAPTCHA_PUBLIC_KEY", "")
+    RECAPTCHA_PRIVATE_KEY = opts.get("RECAPTCHA_PRIVATE_KEY", "")
 
     # Celery settings
     CELERY_APP = "main"
