@@ -61,4 +61,4 @@ RUN echo "Compiling messages..." && \
     echo "Collecting statics..." && \
     CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py collectstatic --noinput --traceback -v 0
 
-VOLUME /data/static
+# VOLUME /data/static
