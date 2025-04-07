@@ -305,19 +305,19 @@ class Base(
                 conn_health_checks=True,
             )
         }
-    else:
-        # Configuración de respaldo usando variables individuales
-        DATABASES = {
-            "default": {
-                "ENGINE": f'django.db.backends.{os.environ.get("DATABASE_ENGINE", "")}',
-                "NAME": os.environ.get("DATABASE_NAME", ""),
-                "USER": os.environ.get("DATABASE_USER", ""),
-                "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
-                "HOST": os.environ.get("DATABASE_HOST", ""),
-                "PORT": os.environ.get("DATABASE_PORT", ""),
-                "CONN_MAX_AGE": int(os.environ.get("DATABASE_CONN_MAX_AGE", 30)),
-            }
-        }
+    # else:
+    #     # Configuración de respaldo usando variables individuales
+    #     DATABASES = {
+    #         "default": {
+    #             "ENGINE": f'django.db.backends.{os.environ.get("DATABASE_ENGINE", "")}',
+    #             "NAME": os.environ.get("DATABASE_NAME", ""),
+    #             "USER": os.environ.get("DATABASE_USER", ""),
+    #             "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
+    #             "HOST": os.environ.get("DATABASE_HOST", ""),
+    #             "PORT": os.environ.get("DATABASE_PORT", ""),
+    #             "CONN_MAX_AGE": int(os.environ.get("DATABASE_CONN_MAX_AGE", 30)),
+    #         }
+    #     }
 
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = True
