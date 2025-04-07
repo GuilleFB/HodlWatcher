@@ -72,7 +72,8 @@ case $1 in
             echo "→ Removing stale celery PID file"
             rm -f /tmp/celery.pid
         fi
-        exec gosu ${runUID} celery -A main.celery worker -l ${CELERY_LOG_LEVEL} -Q ${DJANGO_CELERY_QUEUES} -E --pidfile=""
+        exec gosu ${runUID} celery -A main.celery worker -l ${CELERY_LOG_LEVEL} -Q ${DJANGO_CELERY_QUEUES} --concurrency=1 --without-gossip --without-mingle --pidfile="" --loglevel=${CELERY_LOG_LEVEL} --max-tasks-per-child=1 --prefetch-multiplier=1 --time-limit=300 --soft-time-limit=240 --pool=solo
+
         ;;
 
     run-flower)

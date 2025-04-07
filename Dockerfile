@@ -17,7 +17,7 @@ RUN <<EOF
     if [ ${APP_ENV} = "devel" ]; then
         xargs apt-get -qq install -y < system-dev-requirements.txt
     fi
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 
 # pipenv
