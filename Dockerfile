@@ -50,7 +50,7 @@ RUN groupadd -r -g ${runGID} HodlWatcher && \
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["run-uwsgi", "run-migrations"]
-EXPOSE 8080 1717
+EXPOSE $PORT 1717
 
 HEALTHCHECK --interval=30s --timeout=3s CMD ["launch-probe"]
 
