@@ -1,17 +1,24 @@
 # https://hub.docker.com/_/python/
 FROM python:3.11-bullseye
 
+ARG APP_ENV=prod
+
 WORKDIR /srv
 
 RUN mkdir -p /data/static && mkdir -p /data/media && chmod -R 777 /data
 COPY docker/locale.gen /etc/locale.gen
 COPY bin ./bin
 COPY system-requirements.txt ./system-requirements.txt
+COPY system-dev-requirements.txt ./system-dev-requirements.txt
 
-RUN apt-get -qq update && \
-    xargs apt-get -qq install -y gosu gettext < system-requirements.txt && \
-    rm -rf /var/lib/apt/lists/* && \
-    locale-gen
+RUN <<EOF
+    apt-get -qq update
+    xargs apt-get -qq install -y gosu gettext < system-requirements.txt
+    if [ ${APP_ENV} = "devel" ]; then
+        xargs apt-get -qq install -y < system-dev-requirements.txt
+    fi
+    rm -rf /var/lib/apt/lists/*
+EOF
 
 # pipenv
 RUN pip install pipenv=="2024.4.1"

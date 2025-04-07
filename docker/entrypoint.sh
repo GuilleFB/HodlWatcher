@@ -7,7 +7,18 @@ case $1 in
         echo "→ Executing migrate"
         gosu ${runUID} python manage.py migrate --noinput
         echo "✓ Migrations applied"
-        echo "→ Starting uwsgi server"
+
+        # Verificar la conexión a la base de datos
+        echo "→ Checking database connection"
+        gosu ${runUID} python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); print('Database connection successful')"
+
+        # Verificar la conexión a Redis
+        if [ -n "$REDIS_URL" ]; then
+            echo "→ Checking Redis connection"
+            gosu ${runUID} python -c "import redis; r = redis.from_url('$REDIS_URL'); r.ping() and print('Redis connection successful')"
+        fi
+
+        echo "→ Starting uwsgi server on port $PORT"
         exec gosu ${runUID} uwsgi --ini=/etc/uwsgi/uwsgi.ini
         ;;
 
