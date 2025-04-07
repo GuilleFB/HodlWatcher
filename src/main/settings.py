@@ -5,6 +5,7 @@ from typing import Any
 from configurations import Configuration
 from django.contrib.messages import constants as messages
 from kaio import Options, mixins
+import dj_database_url
 
 opts = Options()
 
@@ -292,6 +293,31 @@ class Base(
             "KEY_PREFIX": "hodlwatcher",  # Añade un prefijo opcional
         }
     }
+
+    # Primero, intenta usar DATABASE_URL si está disponible (proporcionado por Railway)
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+
+    if DATABASE_URL:
+        DATABASES = {
+            "default": dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+    else:
+        # Configuración de respaldo usando variables individuales
+        DATABASES = {
+            "default": {
+                "ENGINE": f'django.db.backends.{os.environ.get("DATABASE_ENGINE", "")}',
+                "NAME": os.environ.get("DATABASE_NAME", ""),
+                "USER": os.environ.get("DATABASE_USER", ""),
+                "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
+                "HOST": os.environ.get("DATABASE_HOST", ""),
+                "PORT": os.environ.get("DATABASE_PORT", ""),
+                "CONN_MAX_AGE": int(os.environ.get("DATABASE_CONN_MAX_AGE", 30)),
+            }
+        }
 
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = True
