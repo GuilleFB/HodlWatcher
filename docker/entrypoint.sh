@@ -3,6 +3,14 @@
 set -e
 
 case $1 in
+    launch-migrations-and-serve)
+        echo "→ Executing migrate"
+        gosu ${runUID} python manage.py migrate --noinput
+        echo "✓ Migrations applied"
+        echo "→ Starting uwsgi server"
+        exec gosu ${runUID} uwsgi --ini=/etc/uwsgi/uwsgi.ini
+        ;;
+
     run-uwsgi)
         exec gosu ${runUID} uwsgi --ini=/etc/uwsgi/uwsgi.ini
         ;;
