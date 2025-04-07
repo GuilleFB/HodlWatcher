@@ -49,7 +49,7 @@ RUN groupadd -r -g ${runGID} HodlWatcher && \
     chown ${runUID}.${runGID} /app -R
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["run-uwsgi"]
+CMD ["run-uwsgi", "run-migrations"]
 EXPOSE 8080 1717
 
 HEALTHCHECK --interval=30s --timeout=3s CMD ["launch-probe"]
