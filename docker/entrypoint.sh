@@ -67,7 +67,12 @@ case $1 in
         echo "→ Executing celery"
         DJANGO_CELERY_QUEUES="${DJANGO_CELERY_QUEUES:-HodlWatcher}"
         CELERY_LOG_LEVEL="${CELERY_LOG_LEVEL:-${LOG_LEVEL:-INFO}}"
-        exec gosu ${runUID} celery -A main.celery worker -l ${CELERY_LOG_LEVEL} -Q ${DJANGO_CELERY_QUEUES} -E --pidfile="/tmp/celery.pid"
+        # Eliminar el archivo PID si existe
+        if [ -f /tmp/celery.pid ]; then
+            echo "→ Removing stale celery PID file"
+            rm -f /tmp/celery.pid
+        fi
+        exec gosu ${runUID} celery -A main.celery worker -l ${CELERY_LOG_LEVEL} -Q ${DJANGO_CELERY_QUEUES} -E --pidfile=""
         ;;
 
     run-flower)
@@ -77,7 +82,12 @@ case $1 in
 
     run-celery-beat)
         echo "→ Executing celery beat"
-        exec gosu ${runUID} celery -A main.celery beat -l info --pidfile="/tmp/celerybeat.pid"
+        # Eliminar el archivo PID si existe
+        if [ -f /tmp/celerybeat.pid ]; then
+            echo "→ Removing stale celerybeat PID file"
+            rm -f /tmp/celerybeat.pid
+        fi
+        exec gosu ${runUID} celery -A main.celery beat -l info --pidfile=""
         ;;
 
     run-tests)
