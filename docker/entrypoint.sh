@@ -67,7 +67,6 @@ case $1 in
         echo "→ Executing celery"
         DJANGO_CELERY_QUEUES="${DJANGO_CELERY_QUEUES:-HodlWatcher}"
         CELERY_LOG_LEVEL="${CELERY_LOG_LEVEL:-${LOG_LEVEL:-INFO}}"
-        rm -f /tmp/celery.pid
         exec gosu ${runUID} celery -A main.celery worker -l ${CELERY_LOG_LEVEL} -Q ${DJANGO_CELERY_QUEUES} -E
         ;;
 
@@ -78,7 +77,6 @@ case $1 in
 
     run-celery-beat)
         echo "→ Executing celery beat"
-        rm -f /tmp/celerybeat.pid
         exec gosu ${runUID} celery -A main.celery beat -l info
         ;;
 
