@@ -329,45 +329,46 @@ class BuscadorView(TemplateView):
             "payment_method_id": self.request.GET.get("payment_method_id", "52"),
             "asset_code": "BTC",
             "currency_code": self.request.GET.get("currency_code", "EUR"),
-            "amount": self.request.GET.get("amount", "150"),
+            "amount": self.request.GET.get("amount", ""),
         }
 
         context["form_data"] = params
 
-        if any(self.request.GET.get(param) for param in params.keys()):
-            try:
-                # Obtener precio promedio (con cache)
-                average_price = self.get_average_price(params["currency_code"])
-                context["average_price"] = average_price
+        try:
+            # Obtener precio promedio (con cache)
+            average_price = self.get_average_price(params["currency_code"])
+            context["average_price"] = average_price
 
-                # Obtener ofertas
-                response = self.http_client.get(
-                    "https://hodlhodl.com/api/v1/offers",
-                    params={
-                        **{f"filters[{k}]": v for k, v in params.items()},
-                        "filters[include_global]": "true",
-                        "pagination[limit]": "100",
-                    },
-                )
-                response.raise_for_status()
-                data = response.json()
+            # Obtener ofertas
+            response = self.http_client.get(
+                "https://hodlhodl.com/api/v1/offers",
+                params={
+                    **{f"filters[{k}]": v for k, v in params.items()},
+                    "filters[include_global]": "true",
+                    "pagination[limit]": "100",
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
 
-                # Filtrar y procesar ofertas
-                if self.request.GET.get("new_user"):
-                    offers = [
-                        offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 0
-                    ]
-                else:
-                    offers = [
-                        offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
-                    ]
-                context["offers"] = self.calculate_price_deviation(offers, average_price)
-                context["meta"] = data.get("meta", {})
+            # Filtrar y procesar ofertas
+            no_trades = self.request.GET.get("new_user")
+            if no_trades:
+                offers = [
+                    offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 0
+                ]
+            else:
+                offers = [
+                    offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
+                ]
+            context["no_trades"] = no_trades
+            context["offers"] = self.calculate_price_deviation(offers, average_price)
+            context["meta"] = data.get("meta", {})
 
-            except requests.RequestException as e:
-                context["error"] = f"Error al obtener datos: {str(e)}"
-                context["offers"] = []
-                context["average_price"] = None
+        except requests.RequestException as e:
+            context["error"] = f"Error al obtener datos: {str(e)}"
+            context["offers"] = []
+            context["average_price"] = None
 
         return context
 
