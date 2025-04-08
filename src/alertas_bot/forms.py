@@ -47,7 +47,16 @@ class InvestmentWatchdogForm(forms.ModelForm):
         label="Method of payment", widget=forms.Select(attrs={"class": "form-select"})
     )
 
-    asset_code = forms.ChoiceField(label="Asset", widget=forms.Select(attrs={"class": "form-select"}))
+    asset_code = forms.CharField(
+        label="Asset",
+        initial="Bitcoin (BTC)",  # Valor por defecto
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "readonly": "readonly",
+            }
+        ),
+    )
 
     def __init__(self, *args, **kwargs):
         # Extraer el usuario_telegram del kwargs (si existe)
@@ -72,13 +81,6 @@ class InvestmentWatchdogForm(forms.ModelForm):
         currency_choices = [(method["code"], f"{method['name']}") for method in cached_currencies]
 
         self.fields["currency"].choices = currency_choices
-
-        # Defining assets
-        asset_choices = [
-            ("BTC", "Bitcoin"),
-        ]
-        self.fields["asset_code"].choices = asset_choices
-        self.fields["asset_code"].disabled = True
 
     class Meta:
         model = InvestmentWatchdog

@@ -36,6 +36,37 @@ class WatchdogNotificationView(TemplatedHTMLEmailMessageView):
         return context
 
 
+class NotificationContactView(TemplatedHTMLEmailMessageView):
+    subject_template_name = "emails/contact/subject_contact.txt"
+    body_template_name = "emails/watchdog/body.txt"
+    html_body_template_name = "emails/contact/email_confirm_contact.html"
+
+    def __init__(self, form):
+        """
+        Initializes the view with the watchdog and matching offers.
+
+        Args:
+            watchdog (InvestmentWatchdog): the watchdog that triggered the notification.
+            offers (list): List of matching offers.
+        """
+        self.form = form
+        super().__init__()
+
+    def get_context_data(self, **kwargs):
+        """
+        Prepara el contexto para las plantillas de correo.
+        """
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.form
+        return context
+
+
+class NotificationAdminContactView(TemplatedHTMLEmailMessageView):
+    subject_template_name = "emails/contact/subject_admin_contact.txt"
+    body_template_name = "emails/watchdog/body.txt"
+    html_body_template_name = "emails/contact/email_admin_contact.html"
+
+
 def send_watchdog_notification(watchdog, offers, fee):
     """
     Sends an email notification to the watchdog user
@@ -53,4 +84,24 @@ def send_watchdog_notification(watchdog, offers, fee):
         return True
     except Exception as e:
         logger.error(f"Error al enviar correo de notificación: {str(e)}")
+        return False
+
+
+def send_contact_email():
+    try:
+        # Instanciar y enviar el mensaje
+        NotificationAdminContactView().send(to=[settings.DEFAULT_FROM_EMAIL], from_email=settings.DEFAULT_FROM_EMAIL)
+        return True
+    except Exception as e:
+        logger.error(f"Error al enviar correo de contacto: {str(e)}")
+        return False
+
+
+def send_contact_confirmation_email(form):
+    try:
+        # Instanciar y enviar el mensaje
+        NotificationContactView(form).send(to=[form["email"]], from_email=settings.DEFAULT_FROM_EMAIL)
+        return True
+    except Exception as e:
+        logger.error(f"Error al enviar correo de contacto: {str(e)}")
         return False

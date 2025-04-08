@@ -15,7 +15,7 @@
                     <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">Receive alerts and take advantage</span></h1>
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xxl-start mb-3">
                       {% if not request.user.is_authenticated %}
-                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">SignUp</a>
+                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">Sign Up</a>
                         <a class="btn btn-outline-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="#about">About</a>
                       {% else %}
                         <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">Watchdogs List</a>
@@ -245,10 +245,12 @@
                         </div>
                     </div>
                 </div>
-
-                    <div class="mt-5">
-                        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4"><i class="bi bi-rocket-takeoff me-2"></i> Register and get started now!</a>
-                    </div>
+                  <div class="mt-5">
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4"><i class="bi bi-rocket-takeoff me-2"></i> Register and get started now!</a>
+                  </div>
+                  <div class="mt-5">
+                    <a href="{% url 'finder' %}" class="btn btn-outline-primary btn-lg px-4"><i class="bi bi-binoculars-fill me-2"></i> Test the offert finder!</a>
+                  </div>
                 </div>
             </div>
         </div>

@@ -20,7 +20,7 @@ from urllib3.util.retry import Retry
 from .forms import ConfiguracionForm, ContactForm, InvestmentWatchdogForm, LinkTelegramForm
 from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTelegram, WatchdogNotification
 from .utils import extract_payment_methods, extract_currencies, delete_file
-
+from .email_views import send_contact_email, send_contact_confirmation_email
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +32,19 @@ class ContactView(CreateView):
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
-        # Save the form data to database
+
         form.save()
 
-        # Here you could add email sending logic
-        # send_contact_email(contact_message)
+        send_contact_email()
 
-        # Add success message
+        send_contact_confirmation_email(form.cleaned_data)
+
         messages.success(self.request, "Thank you for your message! We'll get back to you soon.")
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "There was an error with your submission. Please try again.")
+        return super().form_invalid(form)
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -202,7 +206,7 @@ class BuscadorView(TemplateView):
         prices = self._fetch_prices_from_exchanges(exchanges)
 
         average_price = self._calculate_average_price(prices)
-        cache.set(cache_key, average_price, 300)  # 5 minutos
+        cache.set(cache_key, average_price, 600)
         return average_price
 
     def _get_exchange_data(self, currency):
@@ -315,7 +319,7 @@ class BuscadorView(TemplateView):
         context.update(
             {
                 "payment_methods": self._cached_payment_methods(),
-                "assets": [{"code": "BTC", "name": "Bitcoin"}],
+                "asset": {"code": "BTC", "name": "Bitcoin"},
                 "currencies": self._cached_currecies(),
             }
         )
@@ -323,10 +327,11 @@ class BuscadorView(TemplateView):
         params = {
             "side": self.request.GET.get("side", "sell"),
             "payment_method_id": self.request.GET.get("payment_method_id", "52"),
-            "asset_code": self.request.GET.get("asset_code", "BTC"),
+            "asset_code": "BTC",
             "currency_code": self.request.GET.get("currency_code", "EUR"),
             "amount": self.request.GET.get("amount", "150"),
         }
+
         context["form_data"] = params
 
         if any(self.request.GET.get(param) for param in params.keys()):
@@ -348,9 +353,14 @@ class BuscadorView(TemplateView):
                 data = response.json()
 
                 # Filtrar y procesar ofertas
-                offers = [
-                    offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
-                ]
+                if self.request.GET.get("new_user"):
+                    offers = [
+                        offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 0
+                    ]
+                else:
+                    offers = [
+                        offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
+                    ]
                 context["offers"] = self.calculate_price_deviation(offers, average_price)
                 context["meta"] = data.get("meta", {})
 
@@ -417,7 +427,7 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
             {
                 "side": self.request.GET.get("side", "sell"),
                 "payment_method_id": self.request.GET.get("payment_method_id", "EUR"),
-                "asset_code": self.request.GET.get("asset_code", "BTC"),
+                "asset_code": "BTC",
                 "currency": self.request.GET.get("currency_code", "EUR"),
                 "amount": self.request.GET.get("amount", "150"),
                 "rate_fee": self.request.GET.get("rate_fee", "0"),
@@ -433,7 +443,7 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
                     {"code": "EUR", "name": "Transferencia SEPA"},
                     {"code": "USD", "name": "Transferencia Bancaria"},
                 ],
-                "assets": [{"code": "BTC", "name": "Bitcoin"}],
+                "assets": {"code": "BTC", "name": "Bitcoin"},
                 "currencies": [
                     {"code": "EUR", "name": "Euros"},
                     {"code": "USD", "name": "Dólar Americano"},
@@ -454,7 +464,7 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
                 (p["name"] for p in context["payment_methods"] if p["code"] == form["payment_method_id"].value()),
                 "Transferencia SEPA",
             ),
-            "asset": next((a["name"] for a in context["assets"] if a["code"] == form["asset_code"].value()), "Bitcoin"),
+            "asset": "Bitcoin",
             "amount": form["amount"].value() or "150",
             "rate_fee": f"{float(form['rate_fee'].value() or 0):.2f}%",
         }
