@@ -4,14 +4,14 @@ import time
 from decimal import Decimal
 
 import requests
+from constance import config
 from django.core.cache import cache
+from django.core.files.storage import default_storage
+from telegram.error import TelegramError
+from telegram.ext import Application
 
 from alertas_bot.email_views import send_watchdog_notification
 from alertas_bot.models import WatchdogNotification
-from django.core.files.storage import default_storage
-from constance import config
-from telegram.error import TelegramError
-from telegram.ext import Application
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def obtener_ofertas(token, url_base, parametros):
     }
 
     try:
-        respuesta = requests.get(url, headers=headers, params=parametros)
+        respuesta = requests.get(url, headers=headers, params=parametros, timeout=6)
         respuesta.raise_for_status()  # Lanza una excepción para códigos de estado HTTP erróneos
         return respuesta.json()
 
@@ -61,7 +61,7 @@ def extract_payment_methods():
         list: Lista de métodos de pago con id, type y name.
     """
 
-    json_data = requests.get("https://hodlhodl.com/api/v1/payment_methods").json()
+    json_data = requests.get("https://hodlhodl.com/api/v1/payment_methods", timeout=6).json()
     # Si se pasa un string, convertir a diccionario
     if isinstance(json_data, str):
         json_data = json.loads(json_data)
@@ -88,7 +88,7 @@ def extract_currencies():
         list: Lista de monedas con id, type y name.
     """
 
-    json_data = requests.get("https://hodlhodl.com/api/v1/currencies").json()
+    json_data = requests.get("https://hodlhodl.com/api/v1/currencies", timeout=6).json()
     # Si se pasa un string, convertir a diccionario
     if isinstance(json_data, str):
         json_data = json.loads(json_data)
@@ -125,7 +125,7 @@ def get_matching_offers(watchdog):
 
     # Realizar solicitud a la API
     try:
-        response = requests.get("https://hodlhodl.com/api/v1/offers", params=params)
+        response = requests.get("https://hodlhodl.com/api/v1/offers", params=params, timeout=6)
         response.raise_for_status()
         data = response.json()
         # Filtrar ofertas por número de operaciones del trader (al menos 1)

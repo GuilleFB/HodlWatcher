@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+import dj_database_url
 from configurations import Configuration
 from django.contrib.messages import constants as messages
 from kaio import Options, mixins
-import dj_database_url
 
 opts = Options()
 

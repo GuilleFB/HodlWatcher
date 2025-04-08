@@ -83,7 +83,7 @@ def update_offer_status():
     for notification in active_notifications:
         try:
             # Verificar si la oferta sigue activa
-            response = requests.get(f"https://hodlhodl.com/api/v1/offers/{notification.offer_id}")
+            response = requests.get(f"https://hodlhodl.com/api/v1/offers/{notification.offer_id}", timeout=6)
             if response.status_code == 404:
                 # La oferta ya no existe
                 notification.is_active = False

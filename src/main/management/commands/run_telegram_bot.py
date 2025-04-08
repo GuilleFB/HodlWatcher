@@ -1,9 +1,11 @@
 import logging
+
 from asgiref.sync import sync_to_async
 from constance import config
 from django.core.management.base import BaseCommand
 from telegram import Update
 from telegram.ext import Application, CallbackContext, CommandHandler
+
 from alertas_bot.models import Configuracion, InvestmentWatchdog, UsuarioTelegram
 
 

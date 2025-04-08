@@ -12,15 +12,15 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView, ListView, TemplateView, UpdateView, View, FormView
+from django.views.generic import DeleteView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import CreateView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .email_views import send_contact_confirmation_email, send_contact_email
 from .forms import ConfiguracionForm, ContactForm, InvestmentWatchdogForm, LinkTelegramForm
 from .models import Configuracion, ContactMessage, InvestmentWatchdog, UsuarioTelegram, WatchdogNotification
-from .utils import extract_payment_methods, extract_currencies, delete_file
-from .email_views import send_contact_email, send_contact_confirmation_email
+from .utils import delete_file, extract_currencies, extract_payment_methods
 
 logger = logging.getLogger(__name__)
 
