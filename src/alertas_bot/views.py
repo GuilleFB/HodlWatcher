@@ -577,7 +577,8 @@ class LinkTelegramView(LoginRequiredMixin, FormView):
         except UsuarioTelegram.DoesNotExist:
             messages.error(
                 self.request,
-                "No se encontró ningún usuario de Telegram con ese nombre. Por favor, asegúrate de haber iniciado nuestro bot con /start.",
+                "No se encontró ningún usuario de Telegram con ese nombre. "
+                "Por favor, asegúrate de haber iniciado nuestro bot con /start.",
             )
             return redirect("link_telegram")
 

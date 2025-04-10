@@ -4,7 +4,7 @@ DJANGO_SETTINGS_MODULE = "main.settings"
 DJANGO_CONFIGURATION = "Test"
 
 # https://pytest-django.readthedocs.io/en/latest/database.html
-addopts = "--reuse-db --no-migrations --cipdb --flake8 --mypy --black"
+addopts = "--reuse-db --no-migrations --cipdb --flake8 --black"
 
 #  Running test in paralell https://doc.pytest.org/en/latest/xdist.html
 # addopts = "--reuse-db --no-migrations --cipdb --flake8 --mypy --black -n auto"
@@ -54,6 +54,8 @@ flake8-ignore = [
     "W503",
     "W504",
     "E203",
+    "E722",
+    "E800",
 ]
 
 

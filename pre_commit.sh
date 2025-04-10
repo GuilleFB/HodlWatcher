@@ -28,10 +28,10 @@ print_separator "BANDIT: Security Analysis"
 bandit -r . -ll
 
 print_separator "SAFETY: Checking Dependencies"
-safety check
+safety scan
 
 print_separator "PYTEST and COVERAGE: Checking Tests and Coverage"
-coverage run -m pytest .
+coverage run -m pytest ./src
 coverage report
 
 print_separator "PRE-COMMIT COMPLETADO"
