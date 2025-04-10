@@ -22,12 +22,10 @@ jobs:
         run: docker compose up -d postgres redis
 
       - name: 🏗️ Build Dockerfile
-        run: |
-          docker compose build app-test
+        run: docker compose build app-test
 
       - name: 🚀 Run security tests
-        run: |
-          docker compose run --rm app-test
+        run: docker compose run --rm app-test
 
       - name: 📌 Shutdown services
         run: docker compose down
