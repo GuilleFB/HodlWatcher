@@ -263,7 +263,7 @@ class BuscadorView(TemplateView):
                 std = np.std(prices_array)
                 filtered_prices = [p for p in prices if mean - 2 * std <= p <= mean + 2 * std]
                 return sum(filtered_prices) / len(filtered_prices) if filtered_prices else None
-            except:
+            except ZeroDivisionError:
                 return sum(prices) / len(prices) if prices else None
         return None
 
@@ -417,7 +417,7 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
             try:
                 usuario_telegram = UsuarioTelegram.objects.filter(username=self.request.user.username).first()
                 kwargs["usuario_telegram"] = usuario_telegram
-            except:
+            except UsuarioTelegram.DoesNotExist:
                 pass
 
         return kwargs

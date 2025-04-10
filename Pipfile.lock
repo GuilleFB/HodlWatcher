@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ac02586375280e6f7e4778b89df79cf00457b0b2237a328e450eb5cae9c3e59c"
+            "sha256": "2c65137020de33e1b0a2c6e88bf62b52071ec26e24daa389f5ad3e8ba3d5fb06"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1621,7 +1621,6 @@
                 "sha256:06df115be3b87d0fc1c483db22a2ebb12bcf40585722810d809cc770f5031c37",
                 "sha256:2b29b3dd27171f209e4ddd8204b70c02f0682ae95eecb353f10e8d72b149c63e"
             ],
-            "index": "pypi",
             "version": "==2.3.0"
         },
         "execnet": {
@@ -2166,12 +2165,6 @@
             "markers": "python_version >= '2.7'",
             "version": "==0.3.12"
         },
-        "pytest-cache": {
-            "hashes": [
-                "sha256:be7468edd4d3d83f1e844959fd6e3fd28e77a481440a7118d430130ea31b07a9"
-            ],
-            "version": "==1.0"
-        },
         "pytest-checkipdb": {
             "hashes": [
                 "sha256:74a556ae1d04b4263356f8995e8e8325d671e1b19fad445188b7408309a7ffee",
@@ -2188,14 +2181,6 @@
             "index": "pypi",
             "markers": "python_version >= '3.5'",
             "version": "==4.5.2"
-        },
-        "pytest-eradicate": {
-            "hashes": [
-                "sha256:263cc3e8cc9fcbbd0f949c9c4a45fb753fdfe3672dab13dad47f3357ee9301c8",
-                "sha256:c9917fd59de443d8ed0ed25cddc2aaf1ffd877082ca99216c8c8b6b8893a8e4e"
-            ],
-            "index": "pypi",
-            "version": "==0.0.5"
         },
         "pytest-flake8": {
             "hashes": [
