@@ -4,20 +4,6 @@ set -e
 
 case $1 in
     launch-migrations-and-serve)
-        # Verificar la conexión a la base de datos
-        echo "→ Waiting for Postgres"
-        until pg_isready -h $PGHOST -p $PGPORT -q; do
-            echo "→ Postgres is unavailable, sleeping"
-            sleep 1
-        done
-        echo "→ Postgres ready"
-
-        # Verificar la conexión a Redis
-        if [ -n "$REDIS_URL" ]; then
-            echo "→ Checking Redis connection"
-            gosu ${runUID} python -c "import redis; r = redis.from_url('$REDIS_URL'); r.ping() and print('Redis connection successful')"
-        fi
-
         echo "→ Executing migrate"
         gosu ${runUID} python manage.py migrate --noinput
         echo "✓ Migrations applied"

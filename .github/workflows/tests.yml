@@ -1,0 +1,33 @@
+name: Run Security Tests
+
+on:
+  push:
+    branches-ignore:
+      - demo
+      - develop
+      - staging
+
+jobs:
+  security_tests:
+    runs-on: ubuntu-24.04
+
+    env:
+      ENV_FILE: env-devel
+
+    steps:
+      - name: 📥 Code checkout
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Configure Docker Compose
+        run: docker compose up -d postgres redis
+
+      - name: 🏗️ Build Dockerfile
+        run: |
+          docker compose build app-test
+
+      - name: 🚀 Run security tests
+        run: |
+          docker compose run --rm app-test
+
+      - name: 📌 Shutdown services
+        run: docker compose down

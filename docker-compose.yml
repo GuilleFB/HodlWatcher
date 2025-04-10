@@ -188,6 +188,18 @@ services:
   redis-test:
     <<: *kvstore
 
+  app-test:
+      build:
+        context: .
+        dockerfile: Dockerfile.tests
+      env_file: env-devel
+      depends_on:
+        - postgres
+        - redis
+      links:
+        - redis
+        - postgres
+
 volumes:
   postgres:
   postgres-data:
