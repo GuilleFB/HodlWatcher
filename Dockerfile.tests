@@ -1,56 +1,42 @@
-# https://hub.docker.com/_/python/
-FROM python:3.11-bullseye
+FROM python:3.9.21-bullseye
 
-ARG APP_ENV=prod
+WORKDIR /app
 
-WORKDIR /srv
+# These are the pieces of working equivalent to curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get -qq update && apt-get -qq install -y curl netcat && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /data/static && mkdir -p /data/media && chmod -R 777 /data
+# Instalar dependencias del sistema
 COPY docker/locale.gen /etc/locale.gen
-COPY bin ./bin
-COPY system-requirements.txt ./system-requirements.txt
-COPY system-dev-requirements.txt ./system-dev-requirements.txt
-
-RUN <<EOF
-    apt-get -qq update
-    xargs apt-get -qq install -y gosu gettext < system-requirements.txt
-    if [ ${APP_ENV} = "devel" ]; then
-        xargs apt-get -qq install -y < system-dev-requirements.txt
-    fi
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-EOF
+COPY system-requirements.txt /srv/system-requirements.txt
+COPY system-dev-requirements.txt /srv/system-dev-requirements.txt
+RUN apt-get -qq update && \
+    xargs apt-get -qq install -y < /srv/system-requirements.txt && \
+    xargs apt-get -qq install -y < /srv/system-dev-requirements.txt && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # pipenv
+WORKDIR /srv
 RUN pip install --upgrade pip pipenv
 COPY Pipfile* ./
 RUN pipenv install --dev --system --deploy
+WORKDIR /app
 # end pipenv
 
-WORKDIR /app
+# Copiar la aplicación
 COPY src/ .
-
-COPY docker/entrypoint.test.sh /entrypoint.test.sh
-COPY docker/wait-for-it.sh /usr/local/bin/wait-for-it
 COPY docker/app.docker.ini /app/app.ini
-COPY docker/uwsgi.ini /etc/uwsgi/uwsgi.ini
+COPY docker/app.docker.ini /srv/app.ini
 
-ARG UID=1001
-ARG GID=1001
-ENV runUID=${UID}
-ENV runGID=${GID}
-RUN groupadd -r -g ${runGID} HodlWatcher && \
-    useradd -r -u ${runUID} -g ${runGID} -d /app --no-log-init HodlWatcher && \
-    chown ${runUID}.${runGID} /app -R
+# Copiar wait-for-it.sh y darle permisos de ejecución
+COPY docker/wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
 
-ENV PORT=8080 \
-    UWSGI_PROCESSES=2 \
-    UWSGI_THREADS=4 \
-    CELERY_INSPECT_TIMEOUT=5
+# Copiar entrypoint.sh y darle permisos de ejecución
+COPY docker/entrypoint.test.sh /entrypoint.test.sh
+RUN chmod +x /entrypoint.test.sh
 
-RUN echo "Compiling messages..." && \
-    CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py compilemessages && \
-    echo "Collecting statics..." && \
-    CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py collectstatic --noinput --traceback -v 0
-
-# commands
+# Ejecutar el entrypoint
 ENTRYPOINT ["/entrypoint.test.sh"]
