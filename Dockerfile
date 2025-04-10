@@ -13,16 +13,17 @@ COPY system-dev-requirements.txt ./system-dev-requirements.txt
 
 RUN <<EOF
     apt-get -qq update
-    xargs apt-get -qq install -y gosu gettext < system-requirements.txt
+    xargs apt-get -qq install -y --no-install-recommends gosu gettext < system-requirements.txt
     if [ ${APP_ENV} = "devel" ]; then
-        xargs apt-get -qq install -y < system-dev-requirements.txt
+        xargs apt-get -qq install -y --no-install-recommends < system-dev-requirements.txt
     fi
     apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 
 # pipenv
 RUN pip install pipenv=="2024.4.1"
-COPY Pipfile* ./
+COPY Pipfile ./
+COPY Pipfile.lock ./
 RUN pipenv install --system --deploy
 
 WORKDIR /app

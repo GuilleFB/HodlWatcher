@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, FormView, ListView, TemplateView, UpdateView, View
+from django.views.decorators.http import require_POST
 from django.views.generic.edit import CreateView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -157,6 +158,7 @@ class ConfiguracionUpdateView(LoginRequiredMixin, UpdateView):
 
 
 @login_required
+@require_POST
 def delete_account(request):
     try:
         u = User.objects.get(username=request.user.username)
