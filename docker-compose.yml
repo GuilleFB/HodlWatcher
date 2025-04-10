@@ -194,11 +194,11 @@ services:
         dockerfile: Dockerfile.tests
       env_file: env-devel
       depends_on:
-        - postgres
-        - redis
+        - postgres-test
+        - redis-test
       links:
-        - redis
-        - postgres
+        - redis-test
+        - postgres-test
 
 volumes:
   postgres:

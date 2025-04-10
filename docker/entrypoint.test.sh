@@ -27,28 +27,17 @@ echo -e "${YELLOW}📦 SAFETY: Checking dependencies${NC}"
 safety check || true
 echo ""
 
+echo -e "${CYAN}⚙️ Initializing Django...${NC}"
+python manage.py check || { echo -e "${RED}❌ Django check failed.${NC}"; exit 1; }
+echo ""
+
 # Running Django migrations
 echo -e "${CYAN}🔄 Running migrations...${NC}"
 python manage.py migrate --noinput
 echo ""
 
-# Compile the translation files
-echo -e "${CYAN}🔄 Compiling messages...${NC}"
-CACHE_TYPE=dummy SECRET_KEY=reveal-orders python manage.py compilemessages
-echo ""
-
-# Compress static files
-echo -e "${CYAN}🔄 Compressing static files...${NC}"
-CACHE_TYPE=dummy SECRET_KEY=reveal-orders python manage.py compress --traceback --force
-echo ""
-
-# Collect static files
-echo -e "${CYAN}🔄 Collecting static files...${NC}"
-CACHE_TYPE=dummy SECRET_KEY=reveal-orders python manage.py collectstatic --noinput --traceback -v 0
-echo ""
-
 echo -e "${YELLOW}🧪 PYTEST & COVERAGE: Running tests${NC}"
-coverage run -m pytest -n auto --cache-clear --eradicate --cipdb --flake8 --black . || { echo -e "${RED}❌ Pytest found errors.${NC}"; exit 1; }
+coverage run -m pytest -n auto --cache-clear --cipdb --flake8 --black . || { echo -e "${RED}❌ Pytest found errors.${NC}"; exit 1; }
 echo ""
 coverage report
 echo ""

@@ -1,0 +1,10 @@
+build-essential
+python3-dev
+libpcre3-dev
+ca-certificates
+curl
+gettext
+locales
+iputils-ping
+poppler-utils
+netcat-openbsd

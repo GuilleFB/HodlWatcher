@@ -31,7 +31,7 @@ print_separator "SAFETY: Checking Dependencies"
 safety scan
 
 print_separator "PYTEST and COVERAGE: Checking Tests and Coverage"
-coverage run -m pytest ./src
+coverage run -m pytest .
 coverage report
 
 print_separator "PRE-COMMIT COMPLETADO"
