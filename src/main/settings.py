@@ -79,6 +79,7 @@ class Base(
         "crispy_forms",
         "crispy_bootstrap5",
         "django_recaptcha",
+        "analytical",
     ]
 
     HEALTH_CHECK_APPS = [
@@ -154,9 +155,6 @@ class Base(
         "THE_ANSWER": (42, "Answer to the Ultimate Question of Life, The Universe, and Everything"),
         "TELEGRAM_BOT_TOKEN": ("token", "Token del bot de Telegram"),
     }
-
-    # Robots
-    ROBOTS_SITEMAP_URLS = [opts.get("SITEMAP_URL", "")]
 
     # database and pgBouncer
     # https://docs.djangoproject.com/en/4.2/ref/databases/#transaction-pooling-server-side-cursors
@@ -319,6 +317,22 @@ class Base(
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = opts.get("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = opts.get("EMAIL_HOST_PASSWORD")
+
+    # Configura tus sitemaps
+    ROBOTS_USE_SITEMAP = True
+    # Robots
+    ROBOTS_SITEMAP_URLS = [opts.get("SITEMAP_URL", "")]
+
+    # Configura el cacheo para evitar regenerar el robots.txt en cada petición
+    ROBOTS_CACHE_TIMEOUT = 60 * 60 * 24  # 24 horas
+
+    # Usar directiva Host para especificar el dominio principal
+    ROBOTS_USE_HOST = True
+    ROBOTS_USE_SCHEME_IN_HOST = True  # Incluye https:// en la directiva Host
+
+    DOMAIN = opts.get("DOMAIN", "localhost:8000")  # Dominio principal
+
+    GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = opts.get("GOOGLE_ANALYTICS_GTAG_PROPERTY_ID", "")
 
 
 class Test(Base):

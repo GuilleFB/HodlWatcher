@@ -1,6 +1,7 @@
-{% load static i18n compress %}<!doctype html>
+{% load static i18n compress google_analytics_gtag %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
+    {% google_analytics_gtag %}
     <meta charset="UTF-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
