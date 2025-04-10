@@ -5,8 +5,12 @@ set -e
 case $1 in
     launch-migrations-and-serve)
         # Verificar la conexión a la base de datos
-        echo "→ Checking database connection"
-        gosu ${runUID} python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); print('Database connection successful')"
+        echo "→ Waiting for Postgres"
+        until pg_isready -h $PGHOST -p $PGPORT -q; do
+            echo "→ Postgres is unavailable, sleeping"
+            sleep 1
+        done
+        echo "→ Postgres ready"
 
         # Verificar la conexión a Redis
         if [ -n "$REDIS_URL" ]; then
@@ -17,44 +21,6 @@ case $1 in
         echo "→ Executing migrate"
         gosu ${runUID} python manage.py migrate --noinput
         echo "✓ Migrations applied"
-
-        print_separator() {
-            local title="$1"
-            local width=60
-            local padding=$(( (width - ${#title} - 2) / 2 ))
-            local line=$(printf '%*s' "$width" | tr ' ' '═')
-
-            echo ""
-            echo "$line"
-            printf "%*s %s %*s\n" $padding "" "$title" $padding ""
-            echo "$line"
-            echo ""
-        }
-
-        print_separator "ISORT: Organizing Imports"
-        gosu ${runUID} isort .
-
-        print_separator "AUTOFLAKE: Deleting Unused Code"
-        gosu ${runUID} autoflake -ri --remove-unused-variables --remove-all-unused-imports .
-
-        print_separator "BLACK: Formateando Código"
-        gosu ${runUID} black .
-
-        print_separator "BANDIT: Security Analysis"
-        gosu ${runUID} bandit -r . -ll
-
-        print_separator "SAFETY: Checking Dependencies"
-        gosu ${runUID} safety check
-
-        print_separator "PYTEST and COVERAGE: Checking Tests and Coverage"
-        gosu ${runUID} coverage run -m pytest ./src
-        gosu ${runUID} coverage report
-
-        print_separator "PRE-COMMIT COMPLETADO"
-        echo "All analyses and formatting have been executed correctly."
-        echo ""
-        echo "Please verify the changes before committing."
-        echo ""
 
         echo "→ Starting uwsgi server on port $PORT"
         exec gosu ${runUID} uwsgi --ini=/etc/uwsgi/uwsgi.ini
