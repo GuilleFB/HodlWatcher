@@ -57,6 +57,7 @@ class Base(
         "django.contrib.messages",
         "django.contrib.staticfiles",
         "django.contrib.humanize",
+        "django.contrib.sitemaps",
         "allauth",
         "allauth.account",
         "allauth.mfa",

@@ -15,6 +15,7 @@ from .views import (
     delete_account,
 )
 
+
 urlpatterns = [
     path("configurar-rate-fee/", ConfiguracionUpdateView.as_view(), name="modificar_rate_fee"),
     path("contact/", ContactView.as_view(), name="contact"),

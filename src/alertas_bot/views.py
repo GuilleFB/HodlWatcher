@@ -481,12 +481,14 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.watchdogs.filter(active=True).count() >= 5:
-            messages.error(
-                request, "Ya tienes el máximo de 5 watchdogs activos. Por favor desactiva uno antes de crear otro."
-            )
-            return redirect("watchdogs_list")
-        return super().dispatch(request, *args, **kwargs)
+        try:
+            if request.user.watchdogs.filter(active=True).count() >= 5:
+                messages.error(
+                    request, "Ya tienes el máximo de 5 watchdogs activos. Por favor desactiva uno antes de crear otro."
+                )
+                return redirect("watchdogs_list")
+        except AttributeError:
+            return super().dispatch(request, *args, **kwargs)
 
 
 class WatchdogActivateView(LoginRequiredMixin, View):

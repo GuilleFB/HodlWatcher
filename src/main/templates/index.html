@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
+{% block keywords %}HodlHodl alerts, Bitcoin P2P alerts, HodlHodl price monitor, BTC price notifications, HodlHodl watchdog, automate HodlHodl offers, HodlWatcher, Telegram crypto alerts, Bitcoin trading tool HodlHodl, alertas HodlHodl, notificaciones HodlHodl, monitorizar Bitcoin P2P{% endblock keywords %}
+
+{% block description %}HodlWatcher: HodlHodl alerts and Bitcoin P2P monitoring. Recibe notificaciones BTC via Telegram/Email. Automate your trading strategy 24/7. Free signup!{% endblock description %}
+
 {% block title %}HodlWatcher{% endblock title %}
 {% block header %}
 <!-- Header-->
@@ -10,16 +14,16 @@
             <div class="col-xxl-5">
                 <!-- Header text content-->
                 <div class="text-center text-xxl-start">
-                    <div class="badge bg-gradient-primary-to-secondary text-white mb-4"><div class="text-uppercase">Your watchdog to buy or sell on HodlHodl</div></div>
-                    <div class="fs-3 fw-light text-muted">I can help you to</div>
-                    <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">Receive alerts and take advantage</span></h1>
+                    <div class="badge bg-gradient-primary-to-secondary text-white mb-4"><div class="text-uppercase">{% trans "Your watchdog to buy or sell on HodlHodl" %}</div></div>
+                    <div class="fs-3 fw-light text-muted">{% trans "I can help you to" %}</div>
+                    <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">{% trans "Receive alerts and take advantage" %}</span></h1>
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xxl-start mb-3">
                       {% if not request.user.is_authenticated %}
-                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">Sign Up</a>
-                        <a class="btn btn-outline-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="#about">About</a>
+                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
+                        <a class="btn btn-outline-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="#about">{% trans "About" %}</a>
                       {% else %}
-                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">Watchdogs List</a>
-                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'finder' %}">Finder</a>
+                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">{% trans "Watchdogs List" %}</a>
+                        <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'finder' %}">{% trans "Finder" %}</a>
                       {% endif %}
                     </div>
                 </div>
@@ -157,34 +161,34 @@
         <div class="row gx-5 justify-content-center">
             <div class="col-xxl-8">
                 <div class="text-center my-5">
-                    <h2 class="display-5 fw-bolder"><span class="text-gradient d-inline">Sobre HodlWatch</span></h2>
-                    <p class="lead fw-light mb-4">Tu herramienta inteligente para operar con Bitcoin en HodlHodl.</p>
+                    <h2 class="display-5 fw-bolder"><span class="text-gradient d-inline">{% trans "About HodlWatch" %}</span></h2>
+                    <p class="lead fw-light mb-4">{% trans "Your smart Bitcoin trading tool at HodlHodl." %}</p>
                     <p class="text-muted">
-                        Esta plataforma permite a los usuarios crear alertas personalizadas sobre los precios de compra y venta de BTC en HodlHodl,
-                        asegurando que nunca pierdas una oportunidad de compra o venta en tus términos.
+                        {% trans "This platform allows users to create custom alerts on BTC buying and selling prices on HodlHodl,
+                        ensuring that you never miss a buying or selling opportunity on your terms." %}
                     </p>
 
                     <div class="mt-5 text-start">
-                        <h4 class="fw-bolder mb-3">¿Cómo funciona?</h4>
+                        <h4 class="fw-bolder mb-3">{% trans "How does it work?" %}</h4>
                         <ul class="list-unstyled">
                             <li class="mb-2">
                                 <span class="me-2">👉</span>
-                                <strong>Regístrate</strong> para acceder al <strong>Watchdog</strong> en tu panel de control de alertas.
+                                <strong>{% trans "Register" %}</strong>{% trans " to access the " %}<strong>Watchdog</strong>{% trans " in your alert control panel." %}
                             </li>
                             <li class="mb-2">
                                 <span class="me-2">👉</span>
-                                <strong>Configura tus alertas</strong> según tu objetivo de gasto en EUR, USD o BTC y el <strong>fee rate máximo</strong> deseado.
+                                <strong>{% trans "Configure your alerts" %}</strong>{% trans " according to your spending target in EUR, USD or BTC and the " %}<strong>{% trans "maximum fee rate" %}</strong>{% trans " desired." %}
                             </li>
                             <li class="mb-2">
                                 <span class="me-2">👉</span>
-                                <strong>Alertas instantáneas</strong> vía <i class="bi bi-telegram text-primary"></i> <strong>Telegram</strong> o <i class="bi bi-envelope-fill text-primary"></i> <strong>E-mail</strong> cuando encontremos ofertas que cumplan tus condiciones.</span>
+                                <strong>{% trans "Instant alerts" %}</strong>{% trans " via " %}<i class="bi bi-telegram text-primary"></i> <strong>Telegram</strong>{% trans " or " %}<i class="bi bi bi-envelope-fill text-primary"></i> <strong>E-mail</strong>{% trans " when we find offers that meet your conditions" %}</span>.
                             </li>
                         </ul>
                     </div>
 
 <!-- Sección de Beneficios Mejorada -->
                 <div class="mb-5" data-aos="fade-up">
-                    <h2 class="fw-bolder text-center mb-4">¿Por qué usar HodlWatch?</h2>
+                    <h2 class="fw-bolder text-center mb-4">{% trans "Why use HodlWatch?" %}</h2>
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm transition-all hover-lift">
@@ -192,14 +196,14 @@
                                     <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="height: 70px; width: 70px;">
                                         <i class="bi bi-alarm fs-2"></i>
                                     </div>
-                                    <h5 class="fw-bolder">Ahorra tiempo</h5>
-                                    <p class="text-muted">Olvídate de monitorear manualmente el mercado. HodlWatch trabaja 24/7 para ti.</p>
+                                    <h5 class="fw-bolder">{% trans "Saves time" %}</h5>
+                                    <p class="text-muted">{% trans "Forget about manually monitoring the market. HodlWatch works 24/7 for you." %}</p>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <span class="badge rounded-pill bg-light text-dark fw-normal me-2">
                                             <i class="bi bi-clock me-1"></i> 24/7
                                         </span>
                                         <span class="badge rounded-pill bg-light text-dark fw-normal">
-                                            <i class="bi bi-lightning me-1"></i> Automático
+                                            <i class="bi bi-lightning me-1"></i> {% trans "Automatic" %}
                                         </span>
                                     </div>
                                 </div>
@@ -211,14 +215,14 @@
                                     <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="height: 70px; width: 70px;">
                                         <i class="bi bi-graph-up-arrow fs-2"></i>
                                     </div>
-                                    <h5 class="fw-bolder">Compra estratégica</h5>
-                                    <p class="text-muted">Compra o vende Bitcoin exactamente al precio que deseas sin compromiso.</p>
+                                    <h5 class="fw-bolder">{% trans "Strategic purchasing" %}</h5>
+                                    <p class="text-muted">{% trans "Buy or sell Bitcoin at exactly the price you want without obligation." %}</p>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <span class="badge rounded-pill bg-light text-dark fw-normal me-2">
-                                            <i class="bi bi-currency-bitcoin me-1"></i> Mejor precio
+                                            <i class="bi bi-currency-bitcoin me-1"></i> {% trans "Best price" %}
                                         </span>
                                         <span class="badge rounded-pill bg-light text-dark fw-normal">
-                                            <i class="bi bi-cash-stack me-1"></i> Estrategia
+                                            <i class="bi bi-cash-stack me-1"></i> {% trans "Estrategy" %}
                                         </span>
                                     </div>
                                 </div>
@@ -230,14 +234,14 @@
                                     <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="height: 70px; width: 70px;">
                                         <i class="bi bi-speedometer2 fs-2"></i>
                                     </div>
-                                    <h5 class="fw-bolder">Rendimiento óptimo</h5>
-                                    <p class="text-muted">Alertas instantáneas y recomendaciones personalizadas basadas en tus objetivos.</p>
+                                    <h5 class="fw-bolder">{% trans "Optimum performance" %}</h5>
+                                    <p class="text-muted">{% trans "Instant alerts and personalized recommendations based on your objectives." %}</p>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <span class="badge rounded-pill bg-light text-dark fw-normal me-2">
-                                            <i class="bi bi-bell me-1"></i> Notificaciones
+                                            <i class="bi bi-bell me-1"></i> {% trans "Notifications" %}
                                         </span>
                                         <span class="badge rounded-pill bg-light text-dark fw-normal">
-                                            <i class="bi bi-person-check me-1"></i> Personalizado
+                                            <i class="bi bi-person-check me-1"></i> {% trans "Personalized" %}
                                         </span>
                                     </div>
                                 </div>
@@ -246,10 +250,10 @@
                     </div>
                 </div>
                   <div class="mt-5">
-                    <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4"><i class="bi bi-rocket-takeoff me-2"></i> Register and get started now!</a>
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-4"><i class="bi bi-rocket-takeoff me-2"></i> {% trans "Register and get started now!" %}</a>
                   </div>
                   <div class="mt-5">
-                    <a href="{% url 'finder' %}" class="btn btn-outline-primary btn-lg px-4"><i class="bi bi-binoculars-fill me-2"></i> Test the offert finder!</a>
+                    <a href="{% url 'finder' %}" class="btn btn-outline-primary btn-lg px-4"><i class="bi bi-binoculars-fill me-2"></i> {% trans "Test the offert finder!" %}</a>
                   </div>
                 </div>
             </div>
