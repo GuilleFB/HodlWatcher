@@ -81,6 +81,8 @@ class Base(
         "crispy_bootstrap5",
         "django_recaptcha",
         "analytical",
+        "ckeditor",
+        "faq",
     ]
 
     HEALTH_CHECK_APPS = [
@@ -334,6 +336,33 @@ class Base(
     DOMAIN = opts.get("DOMAIN", "localhost:8000")  # Dominio principal
 
     GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = opts.get("GOOGLE_ANALYTICS_GTAG_PROPERTY_ID", "")
+
+    # CKEditor settings
+    CKEDITOR_CONFIGS = {
+        "default": {
+            "toolbar": "Custom",
+            "toolbar_Custom": [
+                ["Bold", "Italic", "Underline"],
+                [
+                    "NumberedList",
+                    "BulletedList",
+                    "-",
+                    "Outdent",
+                    "Indent",
+                    "-",
+                    "JustifyLeft",
+                    "JustifyCenter",
+                    "JustifyRight",
+                    "JustifyBlock",
+                ],
+                ["Link", "Unlink"],
+                ["RemoveFormat", "Source"],
+            ],
+            "height": 300,
+            "width": "100%",
+        },
+    }
+    CKEDITOR_UPLOAD_PATH = "uploads/"
 
 
 class Test(Base):

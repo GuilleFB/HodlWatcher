@@ -11784,3 +11784,51 @@ html {
     border-radius: 10px;
     overflow: hidden;
 }
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-container .card-header {
+    background-color: #f8f9fa;
+}
+
+.faq-container .btn-link {
+    color: #333;
+    font-weight: 600;
+    text-decoration: none;
+    width: 100%;
+    text-align: left;
+}
+
+.faq-container .btn-link:hover,
+.faq-container .btn-link:focus {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.faq-container .card-body {
+    padding: 1.5rem;
+    line-height: 1.6;
+}
+
+/* Estilo para listas en las respuestas */
+.faq-container .card-body ul {
+    padding-left: 1.5rem;
+}
+
+.faq-container .card-body li {
+    margin-bottom: 0.5rem;
+}
+
+/* Detalles específicos */
+.faq-detail {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-detail h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
