@@ -28,7 +28,9 @@ print_separator "BANDIT: Security Analysis"
 bandit -r . -ll
 
 print_separator "SAFETY: Checking Dependencies"
-safety scan
+cd ..
+safety scan .
+cd src
 
 print_separator "PYTEST and COVERAGE: Checking Tests and Coverage"
 coverage run -m pytest .

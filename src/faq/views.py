@@ -1,4 +1,5 @@
-from django.views.generic import ListView, DetailView
+from django.views.generic import DetailView, ListView
+
 from .models import FAQ
 
 
@@ -18,3 +19,27 @@ class FAQDetailView(DetailView):
 
     def get_queryset(self):
         return FAQ.objects.filter(is_active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Obtener preguntas relacionadas explícitas
+        related_faqs = self.object.related_questions.filter(is_active=True)
+
+        # Si no hay suficientes preguntas relacionadas explícitas, añadir otras preguntas
+        if related_faqs.count() < 5:
+            # Excluir la pregunta actual y las ya relacionadas
+            excluded_ids = [self.object.id] + list(related_faqs.values_list("id", flat=True))
+
+            # Obtener preguntas adicionales ordenadas por su orden
+            additional_faqs = (
+                FAQ.objects.filter(is_active=True)
+                .exclude(id__in=excluded_ids)
+                .order_by("order")[: 5 - related_faqs.count()]
+            )
+
+            # Combinar resultados
+            related_faqs = list(related_faqs) + list(additional_faqs)
+
+        context["related_faqs"] = related_faqs
+        return context

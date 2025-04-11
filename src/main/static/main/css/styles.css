@@ -11832,3 +11832,74 @@ html {
     font-size: 2rem;
     margin-bottom: 1.5rem;
 }
+
+#special-btn {
+  overflow: hidden;
+  background: linear-gradient(90deg, #3a47d5 0%, #00d2ff 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+  width: auto;
+  min-width: 320px;
+  height: 70px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Efecto de pulsación */
+.pulsating-btn {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(58, 71, 213, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(58, 71, 213, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(58, 71, 213, 0);
+  }
+}
+
+/* Efecto de brillo que se mueve */
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  20% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Efecto hover */
+#special-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(50, 50, 93, 0.3), 0 5px 10px rgba(0, 0, 0, 0.25);
+}
+
+#special-btn:active {
+  transform: translateY(-2px);
+}

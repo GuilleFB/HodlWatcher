@@ -41,6 +41,7 @@ dj-database-url = "==2.3.0"
 django-robots = "==6.1"
 django-analytical = "*"
 django-ckeditor = "*"
+scikit-learn = "*"
 
 [dev-packages]
 autoflake = "==1.7.8"
