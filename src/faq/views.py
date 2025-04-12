@@ -1,6 +1,7 @@
+# views.py
 from django.views.generic import DetailView, ListView
 
-from .models import FAQ
+from .models import FAQ, FAQCategory
 
 
 class FAQListView(ListView):
@@ -10,6 +11,26 @@ class FAQListView(ListView):
 
     def get_queryset(self):
         return FAQ.objects.filter(is_active=True).order_by("order")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = FAQCategory.objects.filter(is_active=True).order_by("order")
+        return context
+
+
+class FAQCategoryDetailView(DetailView):
+    model = FAQCategory
+    template_name = "faq_category_detail.html"
+    context_object_name = "category"
+
+    def get_queryset(self):
+        return FAQCategory.objects.filter(is_active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["faqs"] = FAQ.objects.filter(category=self.object, is_active=True).order_by("order")
+        context["categories"] = FAQCategory.objects.filter(is_active=True).order_by("order")
+        return context
 
 
 class FAQDetailView(DetailView):

@@ -19,6 +19,13 @@
                             <i class="bi bi-question-circle me-1"></i> {% trans "FAQ" %}
                         </a>
                     </li>
+                    {% if faq.category %}
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'faq_category_detail' faq.category.slug %}" class="text-decoration-none">
+                            {{ faq.category.name }}
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="breadcrumb-item active" aria-current="page">
                         {{ faq.question|striptags|truncatechars:30 }}
                     </li>
@@ -35,6 +42,14 @@
                             </h1>
                         </div>
 
+                        {% if faq.category %}
+                        <div class="mb-4">
+                            <span class="badge bg-light text-primary py-2 px-3 rounded-pill">
+                                <i class="bi bi-tag me-1"></i> {{ faq.category.name }}
+                            </span>
+                        </div>
+                        {% endif %}
+
                         <div class="card shadow-sm border-0 rounded-3">
                             <div class="card-body">
                                 <div class="d-flex">
@@ -46,8 +61,13 @@
                         </div>
 
                         <div class="d-flex justify-content-between mt-5">
-                            <a href="{% url 'faq_list' %}" class="btn btn-outline-primary rounded-3">
-                                <i class="bi bi-arrow-left me-1"></i> {% trans "Back to all questions" %}
+                            <a href="{% if faq.category %}{% url 'faq_category_detail' faq.category.slug %}{% else %}{% url 'faq_list' %}{% endif %}" class="btn btn-outline-primary rounded-3">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                {% if faq.category %}
+                                {% trans "Back to" %} {{ faq.category.name }}
+                                {% else %}
+                                {% trans "Back to all questions" %}
+                                {% endif %}
                             </a>
 
                             <div class="btn-group" role="group">
@@ -88,6 +108,9 @@
                                         <h6 class="mb-1">{{ related.question }}</h6>
                                         <small class="text-muted">{% trans "Click to view answer" %}</small>
                                     </div>
+                                    {% if related.category %}
+                                    <span class="ms-auto badge bg-light text-primary rounded-pill">{{ related.category.name }}</span>
+                                    {% endif %}
                                 </div>
                             </a>
                             {% empty %}

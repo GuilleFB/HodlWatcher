@@ -1,0 +1,169 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-12 00:11+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: models.py:10
+msgid "Nombre"
+msgstr ""
+
+#: models.py:12 models.py:38
+msgid "Orden"
+msgstr ""
+
+#: models.py:13 models.py:40
+msgid "Activo"
+msgstr ""
+
+#: models.py:17
+msgid "Categoría de FAQ"
+msgstr ""
+
+#: models.py:18
+msgid "Categorías de FAQ"
+msgstr ""
+
+#: models.py:33
+msgid "Pregunta"
+msgstr ""
+
+#: models.py:34
+msgid "Respuesta"
+msgstr ""
+
+#: models.py:36
+msgid "Categoría"
+msgstr ""
+
+#: models.py:42
+msgid "Preguntas relacionadas"
+msgstr ""
+
+#: models.py:44
+msgid "Fecha de creación"
+msgstr ""
+
+#: models.py:45
+msgid "Fecha de actualización"
+msgstr ""
+
+#: models.py:49
+msgid "Pregunta Frecuente"
+msgstr ""
+
+#: models.py:50
+msgid "Preguntas Frecuentes"
+msgstr ""
+
+#: templates/faq_category_detail.html:4
+msgid "Browse frequently asked questions about HodlWatcher in the"
+msgstr ""
+
+#: templates/faq_category_detail.html:4
+msgid "category"
+msgstr ""
+
+#: templates/faq_category_detail.html:8 templates/faq_detail.html:8
+msgid "FAQ HodlWatcher"
+msgstr ""
+
+#: templates/faq_category_detail.html:16
+msgid "Find answers to common questions in this category"
+msgstr ""
+
+#: templates/faq_category_detail.html:24 templates/faq_list.html:25
+msgid "Categories"
+msgstr ""
+
+#: templates/faq_category_detail.html:27 templates/faq_list.html:28
+msgid "All Questions"
+msgstr ""
+
+#: templates/faq_category_detail.html:70 templates/faq_list.html:76
+msgid "View full answer"
+msgstr ""
+
+#: templates/faq_category_detail.html:85 templates/faq_list.html:91
+msgid "No FAQs Available"
+msgstr ""
+
+#: templates/faq_category_detail.html:86
+msgid "There are no frequently asked questions available in this category."
+msgstr ""
+
+#: templates/faq_category_detail.html:97 templates/faq_detail.html:69
+msgid "Back to all questions"
+msgstr ""
+
+#: templates/faq_detail.html:4
+msgid "Detailed answer to the question:"
+msgstr ""
+
+#: templates/faq_detail.html:19
+msgid "FAQ"
+msgstr ""
+
+#: templates/faq_detail.html:67
+msgid "Back to"
+msgstr ""
+
+#: templates/faq_detail.html:96
+msgid "Related Questions"
+msgstr ""
+
+#: templates/faq_detail.html:110
+msgid "Click to view answer"
+msgstr ""
+
+#: templates/faq_detail.html:119
+msgid "No related questions found"
+msgstr ""
+
+#: templates/faq_list.html:4
+msgid ""
+"Find answers to common questions about HodlWatcher, including features, "
+"usage, alerts, and account management in our comprehensive FAQ section."
+msgstr ""
+
+#: templates/faq_list.html:8
+msgid "Frequently Asked Questions (FAQ) about HodlWatcher"
+msgstr ""
+
+#: templates/faq_list.html:14
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: templates/faq_list.html:16
+msgid "Find answers to the most common questions about HodlWatcher"
+msgstr ""
+
+#: templates/faq_list.html:92
+msgid "There are no frequently asked questions available at this time."
+msgstr ""
+
+#: templates/faq_list.html:104
+msgid "Need Help?"
+msgstr ""
+
+#: templates/faq_list.html:106
+msgid ""
+"If you have any questions, please don't hesitate to contact our support team."
+msgstr ""
+
+#: templates/faq_list.html:108
+msgid "Contact Support"
+msgstr ""

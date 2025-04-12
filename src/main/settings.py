@@ -5,6 +5,7 @@ from typing import Any
 import dj_database_url
 from configurations import Configuration
 from django.contrib.messages import constants as messages
+from django.utils.translation import gettext_lazy as _
 from kaio import Options, mixins
 
 opts = Options()
@@ -44,11 +45,21 @@ class Base(
     LANGUAGE_CODE = "en"
     TIME_ZONE = "Europe/Madrid"
 
+    # Languages available
+    LANGUAGES = [
+        ("en", _("English")),
+        ("es", _("Spanish")),
+        # Add more languages as needed
+    ]
+
+    MODELTRANSLATION_AUTO_POPULATE = True
+
     ROOT_URLCONF = "main.urls"
     WSGI_APPLICATION = "main.wsgi.application"
 
     INSTALLED_APPS = [
         # django
+        "modeltranslation",
         "django.contrib.admin",
         "django.contrib.auth",
         "django.contrib.contenttypes",

@@ -191,7 +191,7 @@ class BuscadorView(TemplateView):
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
         session.headers.update(
-            {"User-Agent": "HodlWatcher/1.0 (+https://hodlwatcher.com)", "Accept": "application/json"}
+            {"User-Agent": "HodlWatcher/1.0 (+https://hodlwatcher.up.railway.app/)", "Accept": "application/json"}
         )
         return session
 
@@ -208,7 +208,7 @@ class BuscadorView(TemplateView):
         prices = self._fetch_prices_from_exchanges(exchanges)
 
         average_price = self._calculate_average_price(prices)
-        cache.set(cache_key, average_price, 600)
+        cache.set(cache_key, average_price, 60 * 11)
         return average_price
 
     def _get_exchange_data(self, currency):
@@ -488,7 +488,8 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
                 )
                 return redirect("watchdogs_list")
         except AttributeError:
-            return super().dispatch(request, *args, **kwargs)
+            pass
+        return super().dispatch(request, *args, **kwargs)
 
 
 class WatchdogActivateView(LoginRequiredMixin, View):

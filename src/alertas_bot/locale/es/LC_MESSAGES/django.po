@@ -1,0 +1,99 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-12 00:11+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/buscador.html:96
+msgid "Precio medio exchanges BTC: "
+msgstr ""
+
+#: templates/contact.html:7
+msgid "Contact Us"
+msgstr ""
+
+#: templates/profile.html:162
+msgid "Authenticator App"
+msgstr ""
+
+#: templates/profile.html:168
+msgid "Authentication using an authenticator app is active."
+msgstr ""
+
+#: templates/profile.html:172
+msgid "An authenticator app is not active."
+msgstr ""
+
+#: templates/profile.html:182
+msgid "Deactivate"
+msgstr ""
+
+#: templates/profile.html:186
+msgid "Activate"
+msgstr ""
+
+#: templates/profile.html:205
+msgid "Recovery Codes"
+msgstr ""
+
+#: templates/profile.html:212
+#, python-format
+msgid ""
+"There is %(unused_count)s out of %(total_count)s recovery codes available."
+msgid_plural ""
+"There are %(unused_count)s out of %(total_count)s recovery codes available."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/profile.html:216
+msgid "No recovery codes set up."
+msgstr ""
+
+#: templates/profile.html:226
+msgid "View"
+msgstr ""
+
+#: templates/profile.html:230
+msgid "Download"
+msgstr ""
+
+#: templates/profile.html:235
+msgid "Generate"
+msgstr ""
+
+#: templates/profile.html:254
+msgid "Security Keys"
+msgstr ""
+
+#: templates/profile.html:261
+#, python-format
+msgid "You have added %(count)s security key."
+msgid_plural "You have added %(count)s security keys."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/profile.html:265
+msgid "No security keys have been added."
+msgstr ""
+
+#: templates/profile.html:274
+msgid "Manage"
+msgstr ""
+
+#: templates/profile.html:279
+msgid "Add"
+msgstr ""

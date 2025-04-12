@@ -1,30 +1,29 @@
 {% extends 'base.html' %}
 {% load i18n static %}
 
-{% block description %}{% trans "Find answers to common questions about HodlWatcher, including features, usage, alerts, and account management in our comprehensive FAQ section." %}{% endblock description %}
+{% block description %}{% trans "Browse frequently asked questions about HodlWatcher in the" %} {{ category.name }} {% trans "category" %}{% endblock description %}
 
-{% block keywords %}HodlWatcher FAQ, Frequently Asked Questions, Help Center, HodlWatcher Guide, Bitcoin Fees Alerts, Telegram Alerts, Account Setup, Troubleshooting{% endblock keywords %}
+{% block keywords %}HodlWatcher FAQ, {{ category.name }}, Frequently Asked Questions, Help, Support{% endblock keywords %}
 
-{% block title %}{% trans "Frequently Asked Questions (FAQ) about HodlWatcher" %}{% endblock %}
+{% block title %}{{ category.name }} - {% trans "FAQ HodlWatcher" %}{% endblock %}
 
 {% block content %}
 <div class="container px-5 my-5">
     <div class="text-center mb-5">
         <h1 class="display-5 fw-bolder mb-0">
-            <span class="text-gradient d-inline">{% trans "Frequently Asked Questions" %}</span>
+            <span class="text-gradient d-inline">{{ category.name }}</span>
         </h1>
-        <p class="lead text-muted mt-3">{% trans "Find answers to the most common questions about HodlWatcher" %}</p>
+        <p class="lead text-muted mt-3">{% trans "Find answers to common questions in this category" %}</p>
     </div>
 
     <div class="row gx-5 justify-content-center">
         <!-- Category Navigation Sidebar -->
-        {% if categories %}
         <div class="col-lg-3">
             <div class="card shadow border-0 rounded-4 mb-5">
                 <div class="card-body p-4">
                     <h4 class="text-gradient mb-4">{% trans "Categories" %}</h4>
                     <div class="list-group list-group-flush">
-                        <a href="{% url 'faq_list' %}" class="list-group-item list-group-item-action border-0 py-2 {% if not category %}active{% endif %}">
+                        <a href="{% url 'faq_list' %}" class="list-group-item list-group-item-action border-0 py-2">
                             <i class="bi bi-list-ul me-2"></i> {% trans "All Questions" %}
                         </a>
                         {% for cat in categories %}
@@ -36,10 +35,8 @@
                 </div>
             </div>
         </div>
+
         <div class="col-lg-8 col-xl-8 col-xxl-7">
-        {% else %}
-        <div class="col-lg-11 col-xl-9 col-xxl-8">
-        {% endif %}
             <section>
                 <div class="card shadow border-0 rounded-4 mb-5">
                     <div class="card-body p-5">
@@ -52,9 +49,6 @@
                                                 data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
                                                 aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
                                             <span class="fw-bold">{{ faq.question }}</span>
-                                            {% if faq.category %}
-                                            <span class="ms-auto badge bg-light text-primary rounded-pill">{{ faq.category.name }}</span>
-                                            {% endif %}
                                         </button>
                                     </h2>
                                     <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse"
@@ -89,28 +83,22 @@
                                     <i class="bi bi-exclamation-triangle fs-4"></i>
                                 </div>
                                 <h4 class="fw-bolder mb-3">{% trans "No FAQs Available" %}</h4>
-                                <p class="text-muted mb-0">{% trans "There are no frequently asked questions available at this time." %}</p>
+                                <p class="text-muted mb-0">{% trans "There are no frequently asked questions available in this category." %}</p>
                             </div>
                         {% endif %}
                     </div>
                 </div>
             </section>
 
-            {% if not faqs %}
             <section>
                 <div class="card shadow border-0 rounded-4 mb-5">
-                    <div class="card-body p-5 text-center">
-                        <h3 class="fw-bolder mb-3">
-                            <span class="text-gradient d-inline">{% trans "Need Help?" %}</span>
-                        </h3>
-                        <p class="mb-4">{% trans "If you have any questions, please don't hesitate to contact our support team." %}</p>
-                        <a href="{% url 'contact' %}" class="btn btn-primary px-4">
-                            <i class="bi bi-envelope me-2"></i> {% trans "Contact Support" %}
+                    <div class="card-body p-4 text-center">
+                        <a href="{% url 'faq_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-1"></i> {% trans "Back to all questions" %}
                         </a>
                     </div>
                 </div>
             </section>
-            {% endif %}
         </div>
     </div>
 </div>
