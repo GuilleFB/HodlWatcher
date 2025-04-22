@@ -91,7 +91,6 @@ class Base(
         "crispy_forms",
         "crispy_bootstrap5",
         "django_recaptcha",
-        # "analytical",
         "ckeditor",
         "faq",
     ]
@@ -346,8 +345,6 @@ class Base(
     ROBOTS_USE_SCHEME_IN_HOST = True  # Incluye https:// en la directiva Host
 
     DOMAIN = opts.get("DOMAIN", "localhost:8000")  # Dominio principal
-
-    # GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = opts.get("GOOGLE_ANALYTICS_GTAG_PROPERTY_ID", "")
 
     # CKEditor settings
     CKEDITOR_CONFIGS = {
