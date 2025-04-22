@@ -26,7 +26,7 @@ echo ""
 echo -e "${YELLOW}📦 SAFETY: Checking dependencies${NC}"
 cd ..
 safety check || true
-cd src
+cd srv
 echo ""
 
 echo -e "${CYAN}⚙️ Initializing Django...${NC}"
