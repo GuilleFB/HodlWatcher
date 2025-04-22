@@ -24,9 +24,7 @@ bandit -r . -ll || true
 echo ""
 
 echo -e "${YELLOW}📦 SAFETY: Checking dependencies${NC}"
-cd ..
 safety check || true
-cd srv
 echo ""
 
 echo -e "${CYAN}⚙️ Initializing Django...${NC}"
