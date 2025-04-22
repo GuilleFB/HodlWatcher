@@ -5,6 +5,7 @@ import requests
 from allauth.mfa import app_settings
 from allauth.mfa.models import Authenticator
 from allauth.mfa.utils import is_mfa_enabled
+from constance import config
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,6 +13,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DeleteView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import CreateView
@@ -40,11 +42,11 @@ class ContactView(CreateView):
 
         send_contact_confirmation_email(form.cleaned_data)
 
-        messages.success(self.request, "Thank you for your message! We'll get back to you soon.")
+        messages.success(self.request, _("Thank you for your message! We'll get back to you soon."))
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, "There was an error with your submission. Please try again.")
+        messages.error(self.request, _("There was an error with your submission. Please try again."))
         return super().form_invalid(form)
 
 
@@ -101,16 +103,6 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-
-        # Obtener watchdogs del usuario utilizando select_related para cargar el usuario en una sola consulta
-        watchdogs = user.watchdogs.all()
-        context["watchdogs"] = watchdogs
-
-        # Usar directamente la relación inversa para filtrar notificaciones
-        # y usar prefetch_related solo una vez
-        context["historial_alertas"] = WatchdogNotification.objects.filter(watchdog__user=user).prefetch_related(
-            "watchdog"
-        )
 
         # Intentar obtener configuración de Telegram
         try:
@@ -236,7 +228,7 @@ class BuscadorView(TemplateView):
                     if price_value > 0:
                         prices.append(price_value)
             except Exception as e:
-                print(f"Error en {name}: {str(e)}")
+                logger.info(f"Error en {name}: {str(e)}")
         return prices
 
     def _fetch_price_from_exchange(self, url, price_key):
@@ -272,7 +264,7 @@ class BuscadorView(TemplateView):
     def calculate_price_deviation(self, offers, average_price):
         """Calcula la desviación con manejo de errores mejorado"""
         if not offers or not average_price or average_price <= 0:
-            return [{"error": "Invalid input data"}]
+            return [{"error": _("Invalid input data")}]
 
         processed_offers = []
         for offer in offers:
@@ -282,10 +274,10 @@ class BuscadorView(TemplateView):
                 offer["percent_deviation"] = round(percent_deviation, 2)
             except (TypeError, ValueError, KeyError) as e:
                 offer["percent_deviation"] = None
-                print(f"Error calculando desviación: {e}")
+                logger.info(f"Error calculando desviación: {e}")
             processed_offers.append(offer)
 
-        return processed_offers if processed_offers else [{"error": "No valid offers processed"}]
+        return processed_offers if processed_offers else [{"error": _("No valid offers processed")}]
 
     def _cached_payment_methods(self):
         """Obtiene los métodos de pago con cache"""
@@ -293,7 +285,7 @@ class BuscadorView(TemplateView):
         cached_payment_methods = cache.get(cache_key)
 
         if cached_payment_methods:
-            logging.info("Payment methods retrieved from cache")
+            logger.info("Payment methods retrieved from cache")
             return cached_payment_methods
 
         paymet_methods = extract_payment_methods()
@@ -306,7 +298,7 @@ class BuscadorView(TemplateView):
         cached_currencies = cache.get(cache_key)
 
         if cached_currencies:
-            logging.info("Currencies retrieved from cache")
+            logger.info("Currencies retrieved from cache")
             return cached_currencies
 
         currencies = extract_currencies()
@@ -364,7 +356,11 @@ class BuscadorView(TemplateView):
                     offer for offer in data.get("offers", []) if offer.get("trader", {}).get("trades_count", 0) >= 1
                 ]
             context["no_trades"] = no_trades
-            context["offers"] = self.calculate_price_deviation(offers, average_price)
+            offers = self.calculate_price_deviation(offers, average_price)
+            if params["side"] == "buy":
+                context["offers"] = sorted(offers, key=lambda x: x["percent_deviation"], reverse=True)
+            else:
+                context["offers"] = offers
             context["meta"] = data.get("meta", {})
 
         except requests.RequestException as e:
@@ -389,7 +385,10 @@ class WatchdogListView(LoginRequiredMixin, ListView):
         context["inactive_watchdogs"] = self.request.user.watchdogs.filter(active=False)
         # Añadir contador y límite
         context["current_count"] = self.get_queryset().count()
-        context["max_watchdogs"] = 5
+        context["max_watchdogs"] = config.MAX_WATCHDOGS
+        context["historial_alertas"] = WatchdogNotification.objects.filter(
+            watchdog__user=self.request.user
+        ).prefetch_related("watchdog")
 
         payment_methods = cache.get("payment_methods") or []
 
@@ -452,7 +451,7 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
                     {"code": "USD", "name": "Dólar Americano"},
                 ],
                 "current_count": self.request.user.watchdogs.filter(active=True).count(),
-                "max_watchdogs": 5,
+                "max_watchdogs": config.MAX_WATCHDOGS,
             }
         )
 
@@ -477,14 +476,17 @@ class WatchdogCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        messages.success(self.request, "Watchdog creado correctamente")
+        messages.success(self.request, _("Watchdog successfully created"))
         return super().form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            if request.user.watchdogs.filter(active=True).count() >= 5:
+            if request.user.watchdogs.filter(active=True).count() >= config.MAX_WATCHDOGS:
                 messages.error(
-                    request, "Ya tienes el máximo de 5 watchdogs activos. Por favor desactiva uno antes de crear otro."
+                    request,
+                    _(
+                        f"You already have the maximum of {config.MAX_WATCHDOGS} active watchdogs. Please deactivate one before creating another."
+                    ),
                 )
                 return redirect("watchdogs_list")
         except AttributeError:
@@ -502,18 +504,18 @@ class WatchdogActivateView(LoginRequiredMixin, View):
             watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
 
             # Verificar límite de watchdogs activos
-            user_plan = 5
+            max_watchdogs = config.MAX_WATCHDOGS
             active_count = request.user.watchdogs.filter(active=True).count()
 
-            if active_count >= user_plan:
-                messages.error(request, "Has alcanzado el límite de watchdogs activos para tu plan.")
+            if active_count >= max_watchdogs:
+                messages.error(request, _("You have reached the limit of active watchdogs for your plan."))
             else:
                 watchdog.active = True
                 watchdog.save()
-                messages.success(request, "Watchdog activado correctamente.")
+                messages.success(request, _("Watchdog activated correctly."))
 
         except InvestmentWatchdog.DoesNotExist:
-            messages.error(request, "El watchdog no existe o no tienes permiso para activarlo.")
+            messages.error(request, _("The watchdog does not exist or you do not have permission to activate it."))
 
         return redirect("watchdogs_list")
 
@@ -528,10 +530,10 @@ class WatchdogDeactivateView(LoginRequiredMixin, View):
             watchdog = get_object_or_404(InvestmentWatchdog, pk=pk, user=request.user)
             watchdog.active = False
             watchdog.save()
-            messages.info(request, "Watchdog desactivado correctamente.")
+            messages.info(request, _("Watchdog deactivated correctly."))
 
         except InvestmentWatchdog.DoesNotExist:
-            messages.error(request, "El watchdog no existe o no tienes permiso para desactivarlo.")
+            messages.error(request, _("The watchdog does not exist or you do not have permission to disable it."))
 
         return redirect("watchdogs_list")
 
@@ -549,7 +551,7 @@ class DeleteWatchdogView(LoginRequiredMixin, DeleteView):
         return InvestmentWatchdog.objects.filter(user=self.request.user, active=False)
 
     def form_valid(self, form):
-        messages.warning(self.request, "Watchdog eliminado definitivamente.")
+        messages.warning(self.request, _("Watchdog removed permanently."))
         return super().form_valid(form)
 
 
@@ -569,21 +571,23 @@ class LinkTelegramView(LoginRequiredMixin, FormView):
             # Verificar si ya está vinculado a otro usuario
             existing_config = Configuracion.objects.filter(user_telegram=user_telegram).first()
             if existing_config and existing_config.user != self.request.user:
-                messages.error(self.request, "Este usuario de Telegram ya está vinculado a otra cuenta.")
+                messages.error(self.request, _("This Telegram user is already linked to another account."))
                 return redirect("link_telegram")
 
             # Actualizar la configuración del usuario
-            config, _ = Configuracion.objects.get_or_create(user=self.request.user)
+            config, created = Configuracion.objects.get_or_create(user=self.request.user)
             config.user_telegram = user_telegram
             config.save()
 
-            messages.success(self.request, "¡Cuenta de Telegram vinculada correctamente!")
+            messages.success(self.request, _("Telegram account successfully linked!"))
 
         except UsuarioTelegram.DoesNotExist:
             messages.error(
                 self.request,
-                "No se encontró ningún usuario de Telegram con ese nombre. "
-                "Por favor, asegúrate de haber iniciado nuestro bot con /start.",
+                _(
+                    "No Telegram user with that name was found. "
+                    "Please make sure you have started our bot with /start."
+                ),
             )
             return redirect("link_telegram")
 
@@ -600,10 +604,10 @@ class UnlinkTelegramView(LoginRequiredMixin, View):
                 # Solo desvinculamos, no eliminamos el usuario de Telegram
                 configuracion.user_telegram = None
                 configuracion.save()
-                messages.success(request, "Tu cuenta de Telegram ha sido desvinculada correctamente.")
+                messages.success(request, _("Your Telegram account has been successfully unlinked."))
             else:
-                messages.info(request, "No tenías ninguna cuenta de Telegram vinculada.")
+                messages.info(request, _("You didn't have any linked Telegram accounts."))
         except Configuracion.DoesNotExist:
-            messages.error(request, "No se encontró tu configuración.")
+            messages.error(request, _("Your configuration was not found."))
 
         return redirect("profile")

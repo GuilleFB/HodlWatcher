@@ -22,7 +22,7 @@
                         <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
                         <a class="btn btn-outline-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="#about">{% trans "About" %}</a>
                       {% else %}
-                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">{% trans "Watchdogs List" %}</a>
+                        <a class="btn btn-outline-primary btn-lg px-5 py-3 fs-6 fw-bolder" href="{% url 'watchdogs_list' %}">{% trans "My Watchdogs" %}</a>
                         <a class="btn btn-primary btn-lg px-5 py-3 me-sm-3 fs-6 fw-bolder" href="{% url 'finder' %}">{% trans "Finder" %}</a>
                       {% endif %}
                     </div>
@@ -162,10 +162,10 @@
             <div class="col-xxl-8">
                 <div class="text-center my-5">
                     <h1 class="display-3 fw-bolder mb-5"><span class="text-gradient d-inline">{% trans "About HodlWatch" %}</span></h1>
-                    <h2 class="lead fw-light mb-4">{% trans "Your smart Bitcoin trading tool at HodlHodl." %}</h2>
-                    <p class="text-muted">
+                    <h2 class="fw-light mb-4">{% trans "Your smart Bitcoin trading tool at HodlHodl." %}</h2>
+                    <h2 class="text-muted">
                         {% trans "This platform allows users to create custom alerts on BTC buying and selling prices on HodlHodl, ensuring that you never miss a buying or selling opportunity on your terms." %}
-                    </p>
+                    </h2>
                     <div class="mt-5 text-start">
                         <h4 class="fw-bolder mb-3">{% trans "How does it work?" %}</h4>
                         <ul class="list-unstyled">
@@ -188,7 +188,7 @@
                         </ul>
                     </div>
 
-<!-- Sección de Beneficios Mejorada -->
+                <!-- Sección de Beneficios Mejorada -->
                 <div class="mb-5" data-aos="fade-up">
                     <h2 class="fw-bolder text-center mb-4">{% trans "Why use HodlWatch?" %}</h2>
                     <div class="row g-4">

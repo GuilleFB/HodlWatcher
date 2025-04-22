@@ -1,6 +1,8 @@
+from constance import config
 from django import forms
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV3
 
@@ -41,10 +43,10 @@ class ConfiguracionForm(forms.ModelForm):
 
 class InvestmentWatchdogForm(forms.ModelForm):
     # Definir los campos explícitamente para poder asignarles choices
-    currency = forms.ChoiceField(label="Currency", widget=forms.Select(attrs={"class": "form-select"}))
+    currency = forms.ChoiceField(label="Currency", widget=forms.Select(attrs={"class": "form-select select2"}))
 
     payment_method_id = forms.ChoiceField(
-        label="Method of payment", widget=forms.Select(attrs={"class": "form-select"})
+        label="Method of payment", widget=forms.Select(attrs={"class": "form-select select2"})
     )
 
     asset_code = forms.CharField(
@@ -100,9 +102,11 @@ class InvestmentWatchdogForm(forms.ModelForm):
         cleaned_data = super().clean()
         user = self.instance.user if hasattr(self.instance, "user") else None
 
-        if user and user.watchdogs.filter(active=True).count() >= 5:
+        if user and user.watchdogs.filter(active=True).count() >= config.MAX_WATCHDOGS:
             raise ValidationError(
-                "You already have the maximum of 5 active watchdogs. Please deactivate one before creating another."
+                _(
+                    f"You already have the maximum of {config.MAX_WATCHDOGS} active watchdogs. Please deactivate one before creating another."
+                )
             )
 
         return cleaned_data

@@ -8,92 +8,681 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-12 00:11+0200\n"
+"POT-Creation-Date: 2025-04-22 16:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/buscador.html:96
-msgid "Precio medio exchanges BTC: "
+#: forms.py:108 views.py:488
+#, python-brace-format
+msgid ""
+"You already have the maximum of {config.MAX_WATCHDOGS} active watchdogs. "
+"Please deactivate one before creating another."
 msgstr ""
+
+#: templates/buscador.html:8 templates/buscador.html:13
+msgid "HodlHodl offers"
+msgstr "Ofertas HodlHodl"
+
+#: templates/buscador.html:23
+msgid "Search Filters"
+msgstr "Filtros de búsqueda"
+
+#: templates/buscador.html:29 templates/watchdog_list.html:46
+#: templates/watchdog_list.html:129 templates/watchdog_list.html:226
+#: templates/watchdog_list.html:316
+msgid "Operation"
+msgstr "Operación"
+
+#: templates/buscador.html:32 templates/watchdog_list.html:65
+#: templates/watchdog_list.html:148 templates/watchdog_list.html:249
+#: templates/watchdog_list.html:321
+msgid "I want to Buy"
+msgstr "Quiero Comprar"
+
+#: templates/buscador.html:35 templates/watchdog_list.html:63
+#: templates/watchdog_list.html:146 templates/watchdog_list.html:247
+#: templates/watchdog_list.html:319
+msgid "I want to Sell"
+msgstr "Quiero Vender"
+
+#: templates/buscador.html:50 templates/watchdog_form.html:103
+#: templates/watchdog_list.html:49 templates/watchdog_list.html:132
+msgid "Currency"
+msgstr "Moneda"
+
+#: templates/buscador.html:61 templates/buscador.html:139
+msgid "Payment method"
+msgstr "Método de pago"
+
+#: templates/buscador.html:74
+msgid "Include users without trades"
+msgstr "Incluir usuarios sin operaciones"
+
+#: templates/buscador.html:80
+msgid "Search for offers"
+msgstr "Buscar ofertas"
+
+#: templates/buscador.html:84 templates/buscador.html:88
+#: templates/watchdog_form.html:127
+msgid "Create Watchdog"
+msgstr "Crear Vigilante"
+
+#: templates/buscador.html:103
+msgid "Results"
+msgstr "Resultados"
+
+#: templates/buscador.html:106
+msgid "Average price exchanges BTC: "
+msgstr "Precio promedio BTC en intercambios: "
+
+#: templates/buscador.html:112
+msgid "Error while loading offers:"
+msgstr "Error al cargar las ofertas:"
+
+#: templates/buscador.html:120 templates/buscador.html:126
+#: templates/watchdog_list.html:389
+msgid "Showing"
+msgstr "Mostrando"
+
+#: templates/buscador.html:120
+msgid "best offers including users without trades."
+msgstr "las mejores ofertas incluyendo usuarios sin operaciones."
+
+#: templates/buscador.html:123
+msgid "Please note that users without trades may not be reliable."
+msgstr ""
+"Tenga en cuenta que los usuarios sin operaciones podrían no ser confiables."
+
+#: templates/buscador.html:126
+msgid "best offers with users with at least 1 trade."
+msgstr "las mejores ofertas con usuarios con al menos 1 operación."
+
+#: templates/buscador.html:134
+msgid "Seller"
+msgstr "Vendedor"
+
+#: templates/buscador.html:135
+msgid "Price"
+msgstr "Precio"
+
+#: templates/buscador.html:138
+msgid "Limits"
+msgstr "Límites"
+
+#: templates/buscador.html:140
+msgid "Availability"
+msgstr "Disponibilidad"
+
+#: templates/buscador.html:141 templates/watchdog_list.html:53
+#: templates/watchdog_list.html:136
+msgid "Actions"
+msgstr "Acciones"
+
+#: templates/buscador.html:161
+msgid "New seller"
+msgstr "Nuevo vendedor"
+
+#: templates/buscador.html:168
+msgid "Verified"
+msgstr "Verificado"
+
+#: templates/buscador.html:202
+msgid "First trade"
+msgstr "Primer trade"
+
+#: templates/buscador.html:219
+msgid "minutes to pay"
+msgstr "minutos para pagar"
+
+#: templates/buscador.html:227 templates/watchdog_form.html:91
+#: templates/watchdog_list.html:267
+msgid "Active"
+msgstr "Activo"
+
+#: templates/buscador.html:231 templates/watchdog_list.html:269
+msgid "Inactive"
+msgstr "Inactivo"
+
+#: templates/buscador.html:246
+msgid "Go to HodlHodl"
+msgstr "Ir a HodlHodl"
+
+#: templates/buscador.html:249
+msgid "confirmation"
+msgstr "confirmación"
+
+#: templates/buscador.html:259
+msgid ""
+"No offers were found for these filters. Modify the filters to search for "
+"offers"
+msgstr ""
+"No se encontraron ofertas para estos filtros. Modifique los filtros para "
+"buscar ofertas"
+
+#: templates/buscador.html:271
+#, python-format
+msgid ""
+" Displaying %(meta.current_offset|add:1)s-"
+"%(meta.current_offset|add:meta.current_count)s of %(meta.total_count)s "
+"offers "
+msgstr ""
+" Mostrando %(meta.current_offset|add:1)s-"
+"%(meta.current_offset|add:meta.current_count)s de %(meta.total_count)s "
+"ofertas "
+
+#: templates/buscador.html:278
+msgid "Previous"
+msgstr "Anterior"
+
+#: templates/buscador.html:286
+msgid "Next"
+msgstr "Siguiente"
 
 #: templates/contact.html:7
 msgid "Contact Us"
-msgstr ""
+msgstr "Contáctenos"
 
-#: templates/profile.html:162
+#: templates/profile.html:9 templates/profile.html:14
+msgid "Profile"
+msgstr "Perfil"
+
+#: templates/profile.html:26
+msgid "Profile Info"
+msgstr "Información del perfil"
+
+#: templates/profile.html:38
+msgid "Full Name"
+msgstr "Nombre completo"
+
+#: templates/profile.html:40
+msgid "Username"
+msgstr "Nombre de usuario"
+
+#: templates/profile.html:46
+msgid "Update Profile"
+msgstr "Actualizar perfil"
+
+#: templates/profile.html:62
+msgid "Telegram configuration"
+msgstr "Configuración de Telegram"
+
+#: templates/profile.html:67
+msgid "User"
+msgstr "Usuario"
+
+#: templates/profile.html:69
+msgid "Watchdog alert status"
+msgstr "Estado de las alertas de Watchdogs"
+
+#: templates/profile.html:71
+msgid "Activated"
+msgstr "Activado"
+
+#: templates/profile.html:73
+msgid "Deactivated"
+msgstr "Desactivado"
+
+#: templates/profile.html:77
+msgid "Available commands"
+msgstr "Comandos disponibles"
+
+#: templates/profile.html:79
+msgid "Register"
+msgstr "Registro"
+
+#: templates/profile.html:81
+msgid "Consult or modify the configured rate fees"
+msgstr "Consultar o modificar la configuración de rate fees"
+
+#: templates/profile.html:83
+msgid "Activate or deactivate all watchdogs alerts"
+msgstr "Activar o desactivar todas las alertas de watchdogs"
+
+#: templates/profile.html:85
+msgid "List your configured watchdogs"
+msgstr "Listar tus watchdogs configurados"
+
+#: templates/profile.html:87
+msgid "number"
+msgstr "numero"
+
+#: templates/profile.html:87
+msgid "Activates/deactivates a specific watchdog"
+msgstr "Activa/desactiva un watchdog específico"
+
+#: templates/profile.html:89
+msgid "View the current status of your alerts and rate fees"
+msgstr "Consulte el estado actual de sus alertas y tarifas"
+
+#: templates/profile.html:91
+msgid "Send an alert with your configured rate fees"
+msgstr "Enviar una alerta con las tarifas configuradas"
+
+#: templates/profile.html:93
+msgid "Show this help message"
+msgstr "Mostrar este mensaje de ayuda"
+
+#: templates/profile.html:98
+msgid "Unlink Telegram"
+msgstr "Desvincular Telegram"
+
+#: templates/profile.html:102
+msgid "You do not have Telegram connected to your account."
+msgstr "No tienes ninguna cuenta de Telegram vinculada."
+
+#: templates/profile.html:103
+msgid "To connect"
+msgstr "Conectar"
+
+#: templates/profile.html:105
+msgid "Search for our bot on Telegram"
+msgstr "Busca nuestro bot en Telegram"
+
+#: templates/profile.html:106
+msgid "Send the command"
+msgstr "Enviar el comando"
+
+#: templates/profile.html:107
+msgid "Go to the account link page"
+msgstr "Ir a la página de enlace de la cuenta"
+
+#: templates/profile.html:109
+msgid "Link account"
+msgstr "Vincular cuenta"
+
+#: templates/profile.html:124 templates/profile.html:126
+msgid "Change Password"
+msgstr "Cambiar contraseña"
+
+#: templates/profile.html:140
 msgid "Authenticator App"
-msgstr ""
+msgstr "Aplicación de autenticación"
 
-#: templates/profile.html:168
+#: templates/profile.html:146
 msgid "Authentication using an authenticator app is active."
-msgstr ""
+msgstr "La autenticación mediante una aplicación de autenticación está activa."
 
-#: templates/profile.html:172
+#: templates/profile.html:150
 msgid "An authenticator app is not active."
-msgstr ""
+msgstr "Una aplicación de autenticación no está activa."
 
-#: templates/profile.html:182
+#: templates/profile.html:160
 msgid "Deactivate"
-msgstr ""
+msgstr "Desactivar"
 
-#: templates/profile.html:186
+#: templates/profile.html:164
 msgid "Activate"
-msgstr ""
+msgstr "Activar"
 
-#: templates/profile.html:205
+#: templates/profile.html:183
 msgid "Recovery Codes"
-msgstr ""
+msgstr "Códigos de Recuperación"
 
-#: templates/profile.html:212
+#: templates/profile.html:190
 #, python-format
 msgid ""
 "There is %(unused_count)s out of %(total_count)s recovery codes available."
 msgid_plural ""
 "There are %(unused_count)s out of %(total_count)s recovery codes available."
 msgstr[0] ""
+"Hay %(unused_count)s de %(total_count)s códigos de recuperación disponibles."
 msgstr[1] ""
+"Hay %(unused_count)s de %(total_count)s códigos de recuperación disponibles."
 
-#: templates/profile.html:216
+#: templates/profile.html:194
 msgid "No recovery codes set up."
-msgstr ""
+msgstr "No se han configurado códigos de recuperación."
 
-#: templates/profile.html:226
+#: templates/profile.html:204
 msgid "View"
-msgstr ""
+msgstr "Ver"
 
-#: templates/profile.html:230
+#: templates/profile.html:208
 msgid "Download"
-msgstr ""
+msgstr "Descargar"
 
-#: templates/profile.html:235
+#: templates/profile.html:213
 msgid "Generate"
-msgstr ""
+msgstr "Generar"
 
-#: templates/profile.html:254
+#: templates/profile.html:232
 msgid "Security Keys"
-msgstr ""
+msgstr "Llaves de Seguridad"
 
-#: templates/profile.html:261
+#: templates/profile.html:239
 #, python-format
 msgid "You have added %(count)s security key."
 msgid_plural "You have added %(count)s security keys."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Has añadido %(count)s llave de seguridad."
+msgstr[1] "Has añadido %(count)s llaves de seguridad."
 
-#: templates/profile.html:265
+#: templates/profile.html:243
 msgid "No security keys have been added."
-msgstr ""
+msgstr "No se han añadido llaves de seguridad."
 
-#: templates/profile.html:274
+#: templates/profile.html:252
 msgid "Manage"
+msgstr "Gestionar"
+
+#: templates/profile.html:257
+msgid "Add"
+msgstr "Añadir"
+
+#: templates/watchdog_form.html:7 templates/watchdog_form.html:12
+#: templates/watchdog_list.html:26
+msgid "New Watchdog"
+msgstr "Nuevo Watchdog"
+
+#: templates/watchdog_form.html:22
+msgid "Summary of your Watchdog"
+msgstr "Resumen de su Watchdog"
+
+#: templates/watchdog_form.html:24
+#, python-format
+msgid ""
+"\n"
+"                          I want <span id=\"phrase-side\" class=\"fw-"
+"bold\">%(side)s</span>\n"
+"                          <span id=\"phrase-amount\" class=\"fw-"
+"bold\">%(amount)s</span>\n"
+"                          <span id=\"phrase-currency\" class=\"fw-"
+"bold\">%(currency)s</span> of\n"
+"                          <span id=\"phrase-asset\" class=\"fw-"
+"bold\">%(asset)s</span> via\n"
+"                          \"<span id=\"phrase-payment-method\" class=\"fst-"
+"italic\">%(payment_method)s</span>\"\n"
+"                          with a fee rate lower than <span id=\"phrase-rate-"
+"fee\" class=\"fw-bold\">%(rate_fee)s</span>\n"
+"                      "
+msgstr ""
+"\n"
+"                          Quiero <span id=\"phrase-side\" class=\"fw-"
+"bold\">%(side)s</span>\n"
+"                          <span id=\"phrase-amount\" class=\"fw-"
+"bold\">%(amount)s</span>\n"
+"                          <span id=\"phrase-currency\" class=\"fw-"
+"bold\">%(currency)s</span> de\n"
+"                          <span id=\"phrase-asset\" class=\"fw-"
+"bold\">%(asset)s</span> via\n"
+"                          \"<span id=\"phrase-payment-method\" class=\"fst-"
+"italic\">%(payment_method)s</span>\"\n"
+"                          con un fee rate menor a <span id=\"phrase-rate-"
+"fee\" class=\"fw-bold\">%(rate_fee)s</span>\n"
+"                      "
+
+#: templates/watchdog_form.html:44
+msgid "You already have the maximum of"
+msgstr "Ya tienes el máximo de"
+
+#: templates/watchdog_form.html:44
+msgid "active watchdogs. Please deactivate one before creating another."
+msgstr "watchdogs activos. Desactive uno antes de crear otro."
+
+#: templates/watchdog_form.html:47
+msgid "Back to list"
+msgstr "Volver a la lista"
+
+#: templates/watchdog_form.html:62
+msgid "Configuration"
+msgstr "Configuración"
+
+#: templates/watchdog_form.html:76
+msgid "Summary"
+msgstr "Resúmen"
+
+#: templates/watchdog_form.html:84
+msgid "Sell"
+msgstr "Vender"
+
+#: templates/watchdog_form.html:84
+msgid "Buy"
+msgstr "Comprar"
+
+#: templates/watchdog_form.html:95
+msgid "Method of payment"
+msgstr "Método de pago"
+
+#: templates/watchdog_form.html:99
+msgid "Quantity"
+msgstr "Cantidad"
+
+#: templates/watchdog_form.html:107
+msgid "Fee Rate"
 msgstr ""
 
-#: templates/profile.html:279
-msgid "Add"
+#: templates/watchdog_form.html:115
+msgid "You have"
+msgstr "Tienes"
+
+#: templates/watchdog_form.html:115
+msgid "of"
+msgstr "de"
+
+#: templates/watchdog_form.html:115
+msgid "active watchdogs"
+msgstr "watchdogs activos"
+
+#: templates/watchdog_form.html:124
+msgid "Watchdog List"
+msgstr "Lista de Watchdogs"
+
+#: templates/watchdog_list.html:4 templates/watchdog_list.html:9
+msgid "My Watchdogs"
+msgstr "Mis Watchdogs"
+
+#: templates/watchdog_list.html:21
+msgid "Active Watchdogs"
+msgstr "Watchdogs Activos"
+
+#: templates/watchdog_list.html:30
+msgid "Limit reached"
+msgstr "Límite alcanzado"
+
+#: templates/watchdog_list.html:38
+#, python-format
+msgid " You have %(current_count)s of %(max_watchdogs)s active watchdogs. "
+msgstr " Usted tiene %(current_count)s de %(max_watchdogs)s watchdogs activos."
+
+#: templates/watchdog_list.html:47 templates/watchdog_list.html:130
+msgid "Asset"
 msgstr ""
+
+#: templates/watchdog_list.html:48 templates/watchdog_list.html:131
+#: templates/watchdog_list.html:227 templates/watchdog_list.html:336
+msgid "Amount"
+msgstr "Cantidad"
+
+#: templates/watchdog_list.html:50 templates/watchdog_list.html:133
+msgid "Payment Method"
+msgstr "Método de pago"
+
+#: templates/watchdog_list.html:51 templates/watchdog_list.html:134
+#: templates/watchdog_list.html:342
+msgid "Rate Fee"
+msgstr "Tarifa"
+
+#: templates/watchdog_list.html:52 templates/watchdog_list.html:135
+#: templates/watchdog_list.html:224
+msgid "Date"
+msgstr "Fecha"
+
+#: templates/watchdog_list.html:106
+msgid "You have no active watchdogs"
+msgstr "No tienes watchdogs activos"
+
+#: templates/watchdog_list.html:121
+msgid "Watchdogs Deactivated"
+msgstr "Watchdogs Desactivados"
+
+#: templates/watchdog_list.html:198
+msgid "You do not have watchdogs disabled"
+msgstr "No tienes watchdogs desactivados"
+
+#: templates/watchdog_list.html:213
+msgid "Alert History"
+msgstr "Historial de Alertas"
+
+#: templates/watchdog_list.html:217
+msgid "Alerts more than 7 days old are deleted."
+msgstr "Las alertas con más de 7 días de antigüedad se borran."
+
+#: templates/watchdog_list.html:225
+msgid "Asset/Currency"
+msgstr "Activo/Moneda"
+
+#: templates/watchdog_list.html:228 templates/watchdog_list.html:260
+msgid "Offer"
+msgstr "Oferta"
+
+#: templates/watchdog_list.html:229
+msgid "Status"
+msgstr "Estado"
+
+#: templates/watchdog_list.html:230
+msgid "Details"
+msgstr "Detalles"
+
+#: templates/watchdog_list.html:259
+msgid "View Offer in HodlHodl"
+msgstr "Ver Oferta en HodlHodl"
+
+#: templates/watchdog_list.html:274
+msgid "View Details"
+msgstr "Ver Detalles"
+
+#: templates/watchdog_list.html:289 templates/watchdog_list.html:373
+msgid "Offer Details"
+msgstr "Detalles de la Oferta"
+
+#: templates/watchdog_list.html:310
+msgid "Open Offer on HodlHodl"
+msgstr "Abrir Oferta en HodlHodl"
+
+#: templates/watchdog_list.html:328
+msgid "Notification Date"
+msgstr "Fecha de Notificación"
+
+#: templates/watchdog_list.html:349
+msgid "Offer ID"
+msgstr "ID de la Oferta"
+
+#: templates/watchdog_list.html:355
+msgid "Title"
+msgstr "Título"
+
+#: templates/watchdog_list.html:361
+msgid "Description"
+msgstr "Descripción"
+
+#: templates/watchdog_list.html:389
+msgid "alerts"
+msgstr "alertas"
+
+#: templates/watchdog_list.html:394
+msgid "There is no alert history."
+msgstr "No hay historial de alertas."
+
+#: templates/watchdog_list.html:412
+msgid "Confirm deletion"
+msgstr "Confirmar eliminación"
+
+#: templates/watchdog_list.html:417
+msgid ""
+"Are you sure you want to remove this watchdog? This action cannot be undone."
+msgstr ""
+"¿Está seguro de que desea eliminar este watchdog? Esta acción no se puede "
+"deshacer."
+
+#: templates/watchdog_list.html:421
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: templates/watchdog_list.html:424
+msgid "Definitive deletion"
+msgstr "Eliminar definitivamente"
+
+#: views.py:45
+msgid "Thank you for your message! We'll get back to you soon."
+msgstr "Gracias por su mensaje. Nos pondremos en contacto con usted en breve."
+
+#: views.py:49
+msgid "There was an error with your submission. Please try again."
+msgstr "Se ha producido un error en su envío. Por favor, inténtelo de nuevo."
+
+#: views.py:267
+msgid "Invalid input data"
+msgstr "Datos de entrada no válidos"
+
+#: views.py:280
+msgid "No valid offers processed"
+msgstr "No se han procesado ofertas válidas"
+
+#: views.py:479
+msgid "Watchdog successfully created"
+msgstr "Watchdog creado con éxito"
+
+#: views.py:511
+msgid "You have reached the limit of active watchdogs for your plan."
+msgstr "Ha alcanzado el límite de watchdogs activos para su plan."
+
+#: views.py:515
+msgid "Watchdog activated correctly."
+msgstr "Watchdog activado correctamente."
+
+#: views.py:518
+msgid ""
+"The watchdog does not exist or you do not have permission to activate it."
+msgstr "El watchdog no existe o no tienes permiso para activarlo."
+
+#: views.py:533
+msgid "Watchdog deactivated correctly."
+msgstr "Watchdog desactivado correctamente."
+
+#: views.py:536
+msgid ""
+"The watchdog does not exist or you do not have permission to disable it."
+msgstr "El watchdog no existe o no tienes permiso para desactivarlo."
+
+#: views.py:554
+msgid "Watchdog removed permanently."
+msgstr "Watchdog eliminado permanentemente."
+
+#: views.py:574
+msgid "This Telegram user is already linked to another account."
+msgstr "Este usuario de Telegram ya está vinculado a otra cuenta."
+
+#: views.py:582
+msgid "Telegram account successfully linked!"
+msgstr "¡Cuenta de Telegram vinculada con éxito!"
+
+#: views.py:588
+msgid ""
+"No Telegram user with that name was found. Please make sure you have started "
+"our bot with /start."
+msgstr ""
+"No se ha encontrado ningún usuario de Telegram con ese nombre. Por favor, "
+"asegúrate de que has iniciado nuestro bot con /start."
+
+#: views.py:607
+msgid "Your Telegram account has been successfully unlinked."
+msgstr "Tu cuenta de Telegram se ha desvinculado correctamente."
+
+#: views.py:609
+msgid "You didn't have any linked Telegram accounts."
+msgstr "No tienes ninguna cuenta de Telegram vinculada."
+
+#: views.py:611
+msgid "Your configuration was not found."
+msgstr "No se ha encontrado su configuración."
+
+#~ msgid "Action"
+#~ msgstr "Acción"
+
+#~ msgid "Close"
+#~ msgstr "Cerrar"

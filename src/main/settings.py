@@ -91,7 +91,7 @@ class Base(
         "crispy_forms",
         "crispy_bootstrap5",
         "django_recaptcha",
-        "analytical",
+        # "analytical",
         "ckeditor",
         "faq",
     ]
@@ -168,6 +168,7 @@ class Base(
     CONSTANCE_CONFIG = {
         "THE_ANSWER": (42, "Answer to the Ultimate Question of Life, The Universe, and Everything"),
         "TELEGRAM_BOT_TOKEN": ("token", "Token del bot de Telegram"),
+        "MAX_WATCHDOGS": (5, "Número máximo de watchdogs por usuario"),
     }
 
     # database and pgBouncer
@@ -346,7 +347,7 @@ class Base(
 
     DOMAIN = opts.get("DOMAIN", "localhost:8000")  # Dominio principal
 
-    GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = opts.get("GOOGLE_ANALYTICS_GTAG_PROPERTY_ID", "")
+    # GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = opts.get("GOOGLE_ANALYTICS_GTAG_PROPERTY_ID", "")
 
     # CKEditor settings
     CKEDITOR_CONFIGS = {

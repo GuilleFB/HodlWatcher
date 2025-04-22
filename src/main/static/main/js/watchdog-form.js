@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateDynamicPhrase() {
         // Obtener los valores actuales del resumen
         const side = document.querySelector('.summary-side').textContent.toLowerCase();
-        const sideText = side === 'buy' ? 'vender' : 'comprar';
+        const sideText = side === 'buy' ? 'sell' : 'buy';
 
         // Actualizar elementos de la frase
         document.getElementById('phrase-side').textContent = sideText;

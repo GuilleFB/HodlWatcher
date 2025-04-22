@@ -48,6 +48,8 @@ ENV PORT=8080 \
 
 RUN echo "Compiling messages..." && \
     CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py compilemessages && \
+    echo "Compressing..." && \
+    CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py compress --traceback --force && \
     echo "Collecting statics..." && \
     CACHE_TYPE=dummy SECRET_KEY=HodlWatcher gosu ${runUID} python manage.py collectstatic --noinput --traceback -v 0
 

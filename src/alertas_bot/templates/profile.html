@@ -6,12 +6,12 @@
 
 {% block keywords %}HodlWatcher Profile, Account Settings, Manage Account, User Profile, Update Profile, Telegram Settings, Telegram Alerts, HodlWatcher Bot, Change Password, Security Settings, MFA, Multi-Factor Authentication, TOTP, Authenticator App, Recovery Codes, Security Keys, WebAuthn, Alert History, Delete Account{% endblock keywords %}
 
-{% block title %}Profile{% endblock title %}
+{% block title %}{% trans "Profile" %}{% endblock title %}
 
 {% block content %}
 <div class="container px-5 my-5">
     <div class="text-center mb-5">
-        <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">Profile</span></h1>
+        <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">{% trans "Profile" %}</span></h1>
     </div>
     <div class="row gx-5 justify-content-center">
         <div class="col-lg-11 col-xl-9 col-xxl-8">
@@ -23,7 +23,7 @@
                             <div class="feature bg-primary text-white rounded-3 me-3">
                                 <i class="bi bi-person-circle"></i>
                             </div>
-                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Profile Info</span></h3>
+                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">{% trans "Profile Info" %}</span></h3>
                         </div>
 
                         <div class="row">
@@ -35,15 +35,15 @@
                               {% endif %}
                             </div>
                             <div class="col-md-8">
-                                <p><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                                <p><strong>{% trans "Full Name" %}:</strong> {{ user.first_name }} {{ user.last_name }}</p>
                                 <p><strong>Email:</strong> {{ user.email }}</p>
-                                <p><strong>Username:</strong> {{ user.username }}</p>
+                                <p><strong>{% trans "Username" %}:</strong> {{ user.username }}</p>
 
                                 <!-- Formulario para actualizar perfil -->
                                 <form method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     {{ form|crispy }}
-                                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                                    <button type="submit" class="btn btn-primary">{% trans "Update Profile" %}</button>
                                 </form>
                             </div>
                         </div>
@@ -59,76 +59,54 @@
                       <div class="feature bg-primary text-white rounded-3 me-3">
                         <i class="bi bi-telegram"></i>
                       </div>
-                      <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Configuración de Telegram</span></h3>
+                      <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">{% trans "Telegram configuration" %}</span></h3>
                   </div>
                   <div class="card-body">
                     {% if user.configuracion.user_telegram %}
                       <p>
-                        <strong>Usuario:</strong> {{ user.configuracion.user_telegram.username }}
+                        <strong>{% trans "User" %}:</strong> {{ user.configuracion.user_telegram.username }}
                         <br>
-                        <strong>Estado de alertas de Watchdog:</strong>
+                        <strong>{% trans "Watchdog alert status" %}:</strong>
                         {% if user.configuracion.user_telegram.recibir_alertas_watchdog %}
-                          <span class="badge bg-success">Activadas</span>
+                          <span class="badge bg-success">{% trans "Activated" %}</span>
                         {% else %}
-                          <span class="badge bg-secondary">Desactivadas</span>
+                          <span class="badge bg-secondary">{% trans "Deactivated" %}</span>
                         {% endif %}
                       </p>
                       <p class="mb-0">
-                        <strong>📋 Comandos disponibles:</strong>
+                        <strong>📋 {% trans "Available commands" %}:</strong>
                         <br>
-                        <code>/start</code> - Registrarse en el sistema
+                        <code>/start</code> - {% trans "Register" %}
                         <br>
-                        <code>/ratefee</code> - Consultar o modificar los rate fees configurados
+                        <code>/ratefee</code> - {% trans "Consult or modify the configured rate fees" %}
                         <br>
-                        <code>/watchdog on|off</code> - Activar o desactivar todas las alertas de watchdogs
+                        <code>/watchdog on|off</code> - {% trans "Activate or deactivate all watchdogs alerts" %}
                         <br>
-                        <code>/miswatchdogs</code> - Lista tus watchdogs configurados
+                        <code>/miswatchdogs</code> - {% trans "List your configured watchdogs" %}
                         <br>
-                        <code>/togglewatchdog [número]</code> - Activa/desactiva un watchdog específico
+                        <code>/togglewatchdog [{% trans "number" %}]</code> - {% trans "Activates/deactivates a specific watchdog" %}
                         <br>
-                        <code>/estado</code> - Ver el estado actual de tus alertas y rate fees
+                        <code>/estado</code> - {% trans "View the current status of your alerts and rate fees" %}
                         <br>
-                        <code>/alerta</code> - Enviar una alerta con tus rate fees configurados
+                        <code>/alerta</code> - {% trans "Send an alert with your configured rate fees" %}
                         <br>
-                        <code>/help</code> - Mostrar este mensaje de ayuda
+                        <code>/help</code> - {% trans "Show this help message" %}
                       </p>
                       <div class="text-center mt-3">
                         <form method="POST" action="{% url 'unlink_telegram' %}">
                           {% csrf_token %}
-                          <button type="submit" class="btn btn-danger btn-sm">Desvincular Telegram</button>
+                          <button type="submit" class="btn btn-danger btn-sm">{% trans "Unlink Telegram" %}</button>
                         </form>
                       </div>
                     {% else %}
-                      <p>No tienes conectado Telegram a tu cuenta.</p>
-                      <p>Para conectarlo:</p>
+                      <p>{% trans "You do not have Telegram connected to your account." %}</p>
+                      <p>{% trans "To connect" %}:</p>
                       <ol>
-                        <li>Busca nuestro bot en Telegram: <code>@HodlWatcher_bot</code></li>
-                        <li>Envía el comando <code>/start</code></li>
-                        <li>Ve a la página de enlace de cuenta</li>
+                        <li>{% trans "Search for our bot on Telegram" %}: <code>@HodlWatcher_bot</code></li>
+                        <li>{% trans "Send the command" %} <code>/start</code></li>
+                        <li>{% trans "Go to the account link page" %}</li>
                       </ol>
-                      <a href="{% url 'link_telegram' %}" class="btn btn-primary">Vincular cuenta</a>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- Alertas telegram -->
-            <section>
-              <div class="card shadow border-0 rounded-4 mb-5">
-                <div class="card-body p-5">
-                  <div class="d-flex align-items-center mb-4">
-                    <div class="feature bg-primary text-white rounded-3 me-3">
-                      <i class="bi bi-exclamation-octagon"></i>
-                    </div>
-                    <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Historial de Alertas</span></h3>
-                  </div>
-                  <div class="card-body">
-                    <!-- Aquí puedes listar el historial de alertas recibidas -->
-                    {% if historial_alertas %}
-                      {{historial_alertas}}
-                    {% else %}
-                      <p class="text-center">No hay historial de alertas.</p>
+                      <a href="{% url 'link_telegram' %}" class="btn btn-primary">{% trans "Link account" %}</a>
                     {% endif %}
                   </div>
                 </div>
@@ -143,9 +121,9 @@
                             <div class="feature bg-primary text-white rounded-3 me-3">
                                 <i class="bi bi-key"></i>
                             </div>
-                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">Change Password</span></h3>
+                            <h3 class="fw-bolder mb-0"><span class="text-gradient d-inline">{% trans "Change Password" %}</span></h3>
                         </div>
-                          <a href="{% url 'account_change_password' %}" class="btn btn-primary">Change Password</a>
+                          <a href="{% url 'account_change_password' %}" class="btn btn-primary">{% trans "Change Password" %}</a>
                     </div>
                 </div>
             </section>

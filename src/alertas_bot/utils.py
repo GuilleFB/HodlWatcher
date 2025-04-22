@@ -41,10 +41,10 @@ def obtener_ofertas(token, url_base, parametros):
         return respuesta.json()
 
     except requests.exceptions.RequestException as e:
-        print(f"Error al hacer la petición a la API: {e}")
+        logger.info(f"Error al hacer la petición a la API: {e}")
         return None
     except json.JSONDecodeError as e:
-        print(f"Error al decodificar la respuesta JSON: {e}")
+        logger.info(f"Error al decodificar la respuesta JSON: {e}")
         return None
 
 
@@ -301,7 +301,7 @@ def delete_file(file_path):
     try:
         if default_storage.exists(file_path):
             default_storage.delete(file_path)
-            logging.info(f"Imagen antigua eliminada: {file_path}")
+            logger.info(f"Imagen antigua eliminada: {file_path}")
             return True
         return False
     except Exception as e:

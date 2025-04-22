@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
@@ -10,7 +11,6 @@ from django.views.i18n import JavaScriptCatalog
 from main import views as main_views
 
 from .sitemaps import StaticViewSitemap, UserViewSitemap, WatchdogViewSitemap
-from django.conf.urls.i18n import i18n_patterns
 
 admin.site.site_header = _("HodlWatcher Administration")
 admin.site.site_title = _("HodlWatcher Admin")
