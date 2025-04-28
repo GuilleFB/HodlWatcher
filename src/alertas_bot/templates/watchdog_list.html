@@ -452,11 +452,12 @@
 
             // Manejar el clic en el botón de confirmación
             document.getElementById('confirmDelete').addEventListener('click', function() {
+                const currentLanguage = document.documentElement.lang || 'en';
                 const watchdogId = this.getAttribute('data-watchdog-id');
                 // Crear y enviar el formulario de eliminación
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/watchdog/${watchdogId}/delete/`;
+                form.action = `/${currentLanguage}/watchdog/${watchdogId}/delete/`;
 
                 // Añadir el CSRF token
                 const csrfToken = document.createElement('input');

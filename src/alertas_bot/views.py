@@ -554,6 +554,11 @@ class DeleteWatchdogView(LoginRequiredMixin, DeleteView):
         messages.warning(self.request, _("Watchdog removed permanently."))
         return super().form_valid(form)
 
+    def get(self, request, *args, **kwargs):
+        # Redirigir a la lista de watchdogs si se intenta acceder directamente a la URL
+        messages.warning(self.request, _("Please use the delete button from the watchdogs list."))
+        return redirect("watchdogs_list")
+
 
 # Vista para vincular cuenta de Telegram
 class LinkTelegramView(LoginRequiredMixin, FormView):
