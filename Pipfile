@@ -10,7 +10,7 @@ python_version = "3.11"
 boto3 = "==1.26.129"
 celery = "==5.2.7"
 crispy-bootstrap5 = "==2024.10"
-django = "==4.2.20"
+django = "==4.2.21"
 django-allauth = {extras = ["mfa","socialaccount"], version = "==65.7.0"}
 django-celery-beat = "==2.5.0"
 django-celery-results = "==2.5.0"
